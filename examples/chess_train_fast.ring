@@ -5,6 +5,7 @@ load "../src/ringml.ring"
 load "chess_utils.ring"
 load "chess_dataset.ring"
 
+decimals(8)
 
 see "=== RingML Chess Training (Fast Mode) ===" + nl
 
@@ -65,9 +66,6 @@ for epoch = 1 to nEpochs
         model.backward(grad)
         
         for layer in model.getLayers() optimizer.update(layer) next
-        
-		 # Optional: Print progress within epoch
-        if b % 100 = 0 see "." ok
 
         # OPTIMIZATION 3: Force Garbage Collection every few batches
         if b % 50 = 0 callgc() ok
