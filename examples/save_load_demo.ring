@@ -1,11 +1,11 @@
 load "../src/ringml.ring"
-decimals(8)
+decimals(4)
 
 see "=== RingML Save/Load Model Demo ===" + nl
 
 # 1. Prepare Data (XOR)
 inputs  = new Tensor(4, 2) { aData = [[0,0], [0,1], [1,0], [1,1]] }
-targets = new Tensor(4, 1) { aData = [[0],   [1],   [1],   [0]]   }
+targets = new Tensor(4, 1) { aData = [[0],   [1],   [1],   [0]] }
 
 # 2. Train Model A
 see "--> Training Model A..." + nl

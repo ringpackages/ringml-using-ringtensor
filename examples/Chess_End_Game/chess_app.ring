@@ -1,7 +1,7 @@
 # File: examples/chess_app.ring
 # Description: Console App to predict Chess End-Game result
 
-load "../src/ringml.ring"
+load "../../src/ringml.ring"
 load "chess_utils.ring"
 
 see "==========================================" + nl
@@ -10,21 +10,21 @@ see "==========================================" + nl
 
 # 1. Build Model Architecture (Must match training)
 model = new Sequential
-model.add(new Dense(6, 64))   
+model.add(new Dense(6, 32))   
 model.add(new Sigmoid)        
-model.add(new Dense(64, 32))  
+model.add(new Dense(32, 16))  
 model.add(new Sigmoid)
-model.add(new Dense(32, 18)) 
+model.add(new Dense(16, 18)) 
 model.add(new Softmax)
 
 # 2. Load Weights
-if !fexists("chess_model.rdata")
-    see "Error: Model file 'chess_model.rdata' not found." + nl
-    see "Please run chess_train.ring first." + nl
+if !fexists("model/chess_model_fast.rdata")
+    see "Error: Model file 'chess_model_fast.rdata' not found." + nl
+    see "Please run chess_train_fast.ring first." + nl
     bye
 ok
 
-model.loadWeights("chess_model.rdata")
+model.loadWeights("model/chess_model_fast.rdata")
 see "Model loaded successfully." + nl + nl
 
 # 3. User Input Loop

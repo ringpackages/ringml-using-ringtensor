@@ -5,7 +5,7 @@
 # Load RingML Library (Adjust path as needed)
 load "../src/ringml.ring"
 
-decimals(8)
+decimals(4)
 
 see "=== RingML XOR Training Example ===" + nl
 

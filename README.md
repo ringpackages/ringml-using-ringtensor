@@ -1,140 +1,137 @@
-# 🧠 RingML: Deep Learning Library for Ring
+# RingML: Deep Learning Library for Ring
 
-**RingML** is a lightweight, modular, and extensible Deep Learning framework written in [Ring](https://ring-lang.net). It provides a PyTorch-like API for building, training, and deploying Neural Networks, powered by the **FastPro** C-extension for high-performance matrix operations.
+## 1. Vision
+RingML is a modular, high-performance Deep Learning framework built from scratch in the Ring programming language. It leverages the FastPro C-extension to perform accelerated matrix operations, enabling the training of Neural Networks for tasks like regression and multi-class classification. The goal is to provide a PyTorch-like object-oriented API for Ring developers.
 
----
+## 2. Tech Stack
+- **Core Language**: Ring Programming Language (v1.24+)
+- **Acceleration**: FastPro Extension (C-based DLL/SO)
+- **Architecture**: Modular OOP (Tensor, Layers, Model, Optim, Data)
+- **Data Format**: CSV for datasets, .rdata for model persistence
 
-## 🚀 Features
+## 3. Constraints & Guidelines
+- **Precision**: Must ensure high-precision floating-point arithmetic (Double), handling FastPro's casting limitations.
+- **Design Pattern**: Follows Jacob's Law by mimicking familiar APIs (PyTorch/Keras) for ease of use.
+- **Performance**: Use batch processing (DataLoader) to manage memory and speed.
 
-*   **Tensor Engine**: fast matrix operations (MatMul, Transpose, Broadcasting).
-*   **Layer-Based Architecture**: Modular `Sequential` models with `Dense`, `ReLU`, `Sigmoid`, `Softmax`.
-*   **Automatic Differentiation**: Full implementation of Backpropagation.
-*   **Optimizers & Loss**: `SGD` optimizer, `MSELoss` for regression, `CrossEntropyLoss` for classification.
-*   **Data Handling**: `Dataset` and `DataLoader` for mini-batch processing.
-*   **Model Persistence**: Save and Load trained models easily.
+## 4. Functional Modules
+The project is divided into the following functional modules:
 
----
+### Module 1: Core Engine
+- **Focus**: Mathematical foundation.
+- **Components**: `Tensor` class, FastPro wrappers, Matrix operations (MatMul, Transpose).
 
-## 📦 Installation
+### Module 2: Neural Building Blocks
+- **Focus**: Network layers and activation functions.
+- **Components**: `Layer` (Base), `Dense` (Fully Connected), `ReLU`, `Sigmoid`, `Softmax`.
 
-1.  Ensure you have **Ring 1.20+**.
-2.  Ensure the **FastPro** extension is available (dll/so).
-3.  Clone this repository:
-    ```bash
-    git clone https://github.com/yourusername/RingML.git
-    ```
+### Module 3: Model Management & Optimization
+- **Focus**: Training loop and model structure.
+- **Components**: `Sequential` container, `SGD` Optimizer, `MSELoss`, `CrossEntropyLoss`.
 
----
+### Module 4: Data Pipeline
+- **Focus**: Efficient data handling.
+- **Components**: `Dataset` (Base), `DataLoader` (Mini-batching).
 
-## ⚡ Quick Start
+### Module 5: Real-World Verification
+- **Focus**: Testing and Demos.
+- **Components**: XOR Example, Chess End-Game Classification.
 
-### 1. Classification (XOR Problem)
+## 5. To-Do List & Progress
+**Status**: ✅ Stable / 🚧 In Progress
 
-```ring
-load "src/ringml.ring"
-
-# 1. Prepare Data
-inputs  = new Tensor(4, 2) { aData = [[0,0], [0,1], [1,0], [1,1]] }
-targets = new Tensor(4, 1) { aData = [[0],   [1],   [1],   [0]]   }
-
-# 2. Build Model
-model = new Sequential
-model.add(new Dense(2, 4)) # Input: 2, Hidden: 4
-model.add(new Sigmoid)
-model.add(new Dense(4, 1)) # Output: 1
-model.add(new Sigmoid)
-
-# 3. Setup Training
-optimizer = new SGD(0.5)
-criterion = new MSELoss
-
-# 4. Train
-for epoch = 1 to 5000
-    preds = model.forward(inputs)
-    loss  = criterion.forward(preds, targets)
-    
-    # Backpropagation
-    grad = criterion.backward(preds, targets)
-    model.backward(grad)
-    
-    # Update Weights
-    for layer in model.getLayers() optimizer.update(layer) next
-next
-
-model.forward(inputs).print()
-```
-
-### 2. Multi-Class Classification (Softmax)
-
-```ring
-load "src/ringml.ring"
-
-# Model for 3 classes
-model = new Sequential
-model.add(new Dense(10, 20)) 
-model.add(new Sigmoid)
-model.add(new Dense(20, 3)) 
-model.add(new Softmax)       # Output Probabilities
-
-criterion = new CrossEntropyLoss
-
-# 4. Train
-for epoch = 1 to 5000
-    preds = model.forward(inputs)
-    loss  = criterion.forward(preds, targets)
-    
-    # Backpropagation
-    grad = criterion.backward(preds, targets)
-    model.backward(grad)
-    
-    # Update Weights
-    for layer in model.getLayers() optimizer.update(layer) next
-next
-
-model.forward(inputs).print()
-```
-
-### 3. Save & Load Models
-
-```ring
-load "src/ringml.ring"
-
-# Save
-model.saveWeights("mymodel.rdata")
-
-# Load
-model2 = new Sequential
-# ... (Define same architecture) ...
-model2.loadWeights("mymodel.rdata")
-```
+- [x] **T01.01**: Implement `Tensor` class with FastPro integration.
+- [x] **T01.02**: Implement matrix operations (Add, Sub, ScalarMul, MatMul, Transpose).
+- [x] **T02.01**: Create abstract `Layer` class.
+- [x] **T02.02**: Implement `Dense` layer with weight initialization.
+- [x] **T02.03**: Implement Activations (`Sigmoid`, `ReLU`, `Softmax`).
+- [x] **T03.01**: Build `Sequential` model container (Forward/Backward).
+- [x] **T03.02**: Implement `SGD` Optimizer.
+- [x] **T03.03**: Implement Loss functions (`MSE`, `CrossEntropy`).
+- [x] **T03.04**: Add Model Persistence (`saveWeights`, `loadWeights`).
+- [x] **T04.01**: Implement `DataLoader` for mini-batch processing.
+- [x] **T05.01**: Create XOR training example ("Hello World").
+- [x] **T05.02**: Create Chess End-Game classification app.
+- [x] **T05.03**: Write Unit Tests for gradients and math.
 
 ---
 
-## 📂 Project Structure
+## 📚 Project Documentation
 
+### 📁 Project Structure
 ```text
 RingML/
-├── src/
-│   ├── core/           # Tensor & Math Logic
-│   ├── data/           # Dataset & DataLoader
-│   ├── layers/         # Dense, Activations, Softmax
-│   ├── loss/           # MSE, CrossEntropy
-│   ├── model/          # Sequential Container
-│   ├── optim/          # Optimizers (SGD)
-│   └── ringml.ring     # Library Loader
-├── examples/           # Ready-to-run demos
-└── README.md           # Documentation
+├── src/                        # Core Library Source Code
+│   ├── core/                   # Mathematical Engine (Tensor)
+│   ├── layers/                 # Neural Network Layers (Dense, ReLU, Softmax)
+│   ├── loss/                   # Loss Functions (MSE, CrossEntropy)
+│   ├── model/                  # Model Container (Sequential)
+│   ├── optim/                  # Optimizers (SGD)
+│   ├── data/                   # Data Handling (Dataset, DataLoader)
+│   └── utils/                  # Utilities (Serializer)
+│
+├── examples/                   # Usage Examples
+│   ├── xor_train.ring          # Binary Classification (Hello World of DL)
+│   ├── classify_demo.ring      # Multi-Class Classification
+│   ├── save_load_demo.ring     # Model Persistence Demo
+│   │
+│   └── Chess_End_Game/         # Real-world Application
+│       ├── chess_train_fast.ring  # Optimized Training Script
+│       ├── chess_app.ring         # Inference Application
+│       └── chess_dataset.ring     # Custom Data Handling
+│
+└── tests/                      # Unit Tests for Math & Gradients
 ```
 
----
+### 🛠️ Core Architecture (src/)
+The library follows a PyTorch-like object-oriented design.
 
-## 🛠 Status & Performance
+#### 1. Tensor Engine (`src/core/tensor.ring`)
+The heart of the library. It wraps FastPro C-functions to handle matrix operations efficiently.
+- **Key Features**: `matmul`, `transpose`, `add`, `sub`, `scalar_mul`.
+- **Fixes**: Includes workarounds for FastPro's float casting and transpose logic issues.
 
-Current Version: 1.0
-Performance: Uses Ring loops for some operations (Safe Mode) pending specific updates to FastPro C-Extension (Double precision support).
+#### 2. Layers (`src/layers/`)
+- **Layer**: Abstract base class enforcing `forward()` and `backward()`.
+- **Dense**: Fully Connected Layer. Manages Weights ($W$) and Biases ($B$).
+- **Activations**:
+  - `Sigmoid`: For binary outputs or hidden layers.
+  - `ReLU`: Rectified Linear Unit (Standard for hidden layers).
+  - `Softmax`: Converts outputs to probabilities for multi-class classification.
 
----
+#### 3. Model Management (`src/model/`)
+- **Sequential**: A container that stacks layers linearly.
+  - `forward(input)`: Passes data through all layers.
+  - `backward(gradient)`: Propagates errors backward.
+  - `saveWeights(file)`: Serializes model parameters.
+  - `loadWeights(file)`: Restores model state.
 
-## 📄 License
+#### 4. Optimization & Loss (`src/optim/`, `src/loss/`)
+- **SGD**: Stochastic Gradient Descent optimizer.
+- **MSELoss**: Mean Squared Error (Regression).
+- **CrossEntropyLoss**: Classification loss combining log-likelihood with Softmax.
 
-Open Source under MIT License.
+#### 5. Data Loading (`src/data/`)
+- **DataLoader**: Handles Mini-Batch Processing, slicing data into small batches (e.g., 64 or 256 samples) to improve performance and memory usage.
+
+### 🚀 Usage Examples
+
+#### 1. The "Hello World" (XOR Problem)
+Located in `examples/xor_train.ring`.
+- **Input**: 2 features.
+- **Output**: 1 prediction (0 or 1).
+- **Result**: Loss decreases to ~0.0002.
+
+#### 2. Real-World Case: Chess End-Game
+Predicts the result of a Chess End-Game (King + Rook vs. King).
+- **Dataset**: `chess.csv` (28,056 games).
+- **Architecture**: `Input(6) -> Dense(32) -> Sigmoid -> Dense(16) -> Sigmoid -> Dense(18) -> Softmax`.
+- **Inference**: `chess_app.ring` allows users to input board coordinates and get predictions.
+
+### 📦 Installation
+1. Copy the `src` folder to your project.
+2. Ensure `fastpro.dll` (or `.so`) is available.
+3. Import the library:
+   ```ring
+   load "src/ringml.ring"
+   ```

@@ -1,11 +1,11 @@
 # File: examples/chess_train_batch.ring
 # Description: Efficient Batch Training for Chess KRK
 
-load "../src/ringml.ring"
+load "../../src/ringml.ring"
 load "chess_utils.ring"
 load "chess_dataset.ring" # Load our custom dataset
 
-decimals(8)
+decimals(3)
 
 see "=== RingML Chess Training (Mini-Batch) ===" + nl
 
@@ -83,5 +83,5 @@ next
 see "Total Time: " + ((clock()-tTotal)/clockspersecond()) + "s" + nl
 
 # 5. Save
-oModel.saveWeights("chess_model.rdata")
+oModel.saveWeights("model/chess_model.rdata")
 see "Model Saved." + nl

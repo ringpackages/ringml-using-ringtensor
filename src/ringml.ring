@@ -1,10 +1,10 @@
 # File: src/ringml.ring
 # Description: Main entry point for RingML library
 
-load "stdlib.ring"
 load "fastpro.ring"
 load "core/tensor.ring"
-load "data/dataset.ring"  
+load "utils/serializer.ring"
+load "data/dataset.ring"
 load "layers/layer.ring"
 load "layers/dense.ring"
 load "layers/activation.ring"
@@ -15,4 +15,4 @@ load "loss/crossentropy.ring"
 load "optim/sgd.ring"
 
 func RingML_Info
-    see "RingML Library v1.2 - Data Loaders Ready" + nl
+    see "RingML Library v1.3 - High Precision IO" + nl

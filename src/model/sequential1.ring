@@ -2,6 +2,8 @@
 # Description: Sequential Model Container with Save/Load support
 # Author: Code Gear-1
 
+load "tokenslib.ring"
+
 class Sequential
     aLayers = []
 
@@ -35,16 +37,16 @@ class Sequential
         aAllParams = []
         
         for oLayer in aLayers
+            # Check if layer has weights (like Dense)
             if hasParams(oLayer)
-                # We save the raw list data (aData)
+                # We save the raw list data (aData), not the Tensor object
                 aAllParams + oLayer.oWeights.aData
                 aAllParams + oLayer.oBias.aData
             ok
         next
         
-        # 2. Serialize using High-Precision utility
-        cData = SerializeData(aAllParams)
-        
+        # 2. Serialize and Write
+        cData = list2Code(aAllParams)
         write(cFileName, cData)
         see "Done." + nl
 
@@ -56,19 +58,22 @@ class Sequential
         ok
         
         # 1. Read and Deserialize
-        # eval() is used to parse the code string back into a list
-        cCode = "return " + read(cFileName)
-        aAllParams = eval(cCode)
+        cData = "aAllParams = " + read(cFileName)
+
+        if checkRingCode([:code = cData]) 
+            eval( cData)
+        else
+            raise("Error: Invalid file format - " + cFileName)
+        ok
         
         # 2. Distribute params back to layers
         nIdx = 1
         for oLayer in aLayers
             if hasParams(oLayer)
-                if nIdx > len(aAllParams) 
-                    raise("Error: Model architecture mismatch (not enough params)")
-                ok
-                
                 # Restore Weights
+                if nIdx > len(aAllParams) 
+                    raise("Error: Model architecture mismatch (not enough params in file)")
+                ok
                 oLayer.oWeights.aData = aAllParams[nIdx]
                 nIdx++
                 
@@ -79,13 +84,11 @@ class Sequential
         next
         see "Done." + nl
 
-	
 
-    # Helper to check if layer is trainable
+    private
 
-    private 
-
-	func hasParams oLayer
+    # Helper to check if layer is trainable (has weights)
+    func hasParams oLayer
         aAttrs = attributes(oLayer)
         bHasW = false
         bHasB = false
@@ -95,4 +98,6 @@ class Sequential
         next
         return (bHasW and bHasB)
 
-	
+    
+
+    

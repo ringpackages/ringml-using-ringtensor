@@ -1,10 +1,11 @@
 # File: examples/chess_train_fast.ring
 # Description: Lightweight Training for slower machines
 
-load "../src/ringml.ring"
+load "../../src/ringml.ring"
 load "chess_utils.ring"
 load "chess_dataset.ring"
 
+# Set display precision to 5 decimal places
 decimals(8)
 
 see "=== RingML Chess Training (Fast Mode) ===" + nl
@@ -67,15 +68,17 @@ for epoch = 1 to nEpochs
         
         for layer in model.getLayers() optimizer.update(layer) next
 
+        if b % 5 = 0 see "." ok
+
         # OPTIMIZATION 3: Force Garbage Collection every few batches
-        if b % 50 = 0 callgc() ok
+        if b % 50 = 0  callgc() ok
     next
-    
+    see nl
     avgLoss = epochLoss / loader.nBatches
     see "Epoch " + epoch + " Avg Loss: " + avgLoss + nl
 next
 
 see "Total Time: " + ((clock()-tTotal)/clockspersecond()) + "s" + nl
 
-model.saveWeights("chess_model_fast.rdata")
+model.saveWeights("model/chess_model_fast.rdata")
 see "Model Saved." + nl
