@@ -1,5 +1,5 @@
 # File: src/ringml.ring
-# Description: Main entry point for RingML library
+# Description: Main entry point
 
 load "fastpro.ring"
 load "core/tensor.ring"
@@ -13,6 +13,7 @@ load "model/sequential.ring"
 load "loss/mse.ring"
 load "loss/crossentropy.ring"
 load "optim/sgd.ring"
+load "optim/adam.ring"         
 
 func RingML_Info
-    see "RingML Library v1.3 - High Precision IO" + nl
+    see "RingML Library v1.4 - Adam Optimizer Added" + nl

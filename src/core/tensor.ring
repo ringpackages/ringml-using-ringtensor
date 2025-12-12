@@ -1,20 +1,20 @@
 # File: src/core/tensor.ring
-# Description: Core Tensor class - High Performance Mode (FastPro Fixed)
+# Description: Core Tensor class - Updated for Adam Optimizer
 # Author: Code Gear-1
 
 load "fastpro.ring"
 
 class Tensor
-    aData   = []    # Matrix data
-    nRows   = 0     # Number of rows
-    nCols   = 0     # Number of columns
+    aData   = []    
+    nRows   = 0     
+    nCols   = 0     
 
     func init nR, nC
-        nRows = nR
-        nCols = nC
-        aData = list(nRows)
-        for i = 1 to nRows
-            aData[i] = list(nCols)
+        self.nRows = nR
+        self.nCols = nC
+        aData = list(self.nRows)
+        for i = 1 to self.nRows
+            aData[i] = list(self.nCols)
         next
         return self
         
@@ -26,7 +26,6 @@ class Tensor
         return oNew
 
     # --- Initialization ---
-
     func random
         updateList(aData, :random, :matrix)
         return self
@@ -40,10 +39,16 @@ class Tensor
         return self
 
     # --- Math Operations ---
-
+    
     func add oTensor
         checkDimensions(oTensor)
         aData = updateList(aData, :add, :matrix, oTensor.aData)
+        return self
+
+    # New: Add Scalar (For Epsilon in Adam)
+    func add_scalar nVal
+        # FastPro Case 205: Add to Items
+        updateList(aData, :add, :items, nVal)
         return self
 
     func sub oTensor
@@ -53,11 +58,21 @@ class Tensor
 
     func mul oTensor
         checkDimensions(oTensor)
-        # Element-Wise Mul (Using the new emul command if available, or manual loop)
-        # Fallback to manual loop if emul not yet compiled in your DLL
+        # Using manual loop until :emul is fully deployed
         for r = 1 to nRows
              for c = 1 to nCols
                  aData[r][c] *= oTensor.aData[r][c]
+             next
+        next
+        return self
+
+    # New: Element-Wise Division (For Adam)
+    func div oTensor
+        checkDimensions(oTensor)
+        for r = 1 to nRows
+             for c = 1 to nCols
+                 # Avoid division by zero check if handled by epsilon outside
+                 aData[r][c] /= oTensor.aData[r][c]
              next
         next
         return self
@@ -79,14 +94,18 @@ class Tensor
     func square
         aData = updateList(aData, :square, :matrix)
         return self
+    
+    # New: Square Root (For Adam)
+    func sqrt
+        # FastPro Case 2206
+        aData = updateList(aData, :sqrt, :matrix)
+        return self
         
     func mean
         nRes = updateList(aData, :mean, :matrix)
         return nRes
 
     func exp_func
-        # Requires FastPro update or manual loop. 
-        # Manual loop for safety:
         for r = 1 to nRows
             for c = 1 to nCols
                 aData[r][c] = exp(aData[r][c])
@@ -95,13 +114,12 @@ class Tensor
         return self
 
     # --- Matrix Operations ---
-
     func matmul oTensor
-        if nCols != oTensor.nRows
+        if self.nCols != oTensor.nRows
             raise("Dimension Mismatch in MatMul")
         ok
         newData = updateList(aData, :mul, :matrix, oTensor.aData)
-        oRes = new Tensor(nRows, oTensor.nCols)
+        oRes = new Tensor(self.nRows, oTensor.nCols)
         oRes.aData = newData
         return oRes
 
@@ -113,7 +131,6 @@ class Tensor
         return self
 
     # --- Activations ---
-
     func sigmoid
         aData = updateList(aData, :sigmoid, :matrix)
         return self
@@ -135,11 +152,22 @@ class Tensor
         return self
 
     func softmax
-        # FastPro Case 3306 (Now Implemented in C)
         aData = updateList(aData, :softmax, :matrix)
         return self
-        
+
     # --- Utilities ---
+    func print_shape
+        see "(" + nRows + ", " + nCols + ")" + nl
+
+    func decimals nPlaces
+        for r = 1 to nRows
+            for c = 1 to nCols
+                nFactor = pow(10, nPlaces)
+                val = floor(aData[r][c] * nFactor) / nFactor
+                aData[r][c] = val
+            next
+        next
+        return self
 
     func checkDimensions oTensor
         if nRows != oTensor.nRows or nCols != oTensor.nCols
@@ -153,8 +181,4 @@ class Tensor
         else
             see "Data is too large to display." + nl
         ok
-        see nl
-
-    func print_shape
-        see "Tensor Shape: (" + nRows + ", " + nCols + ")" + nl
         see nl
