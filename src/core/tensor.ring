@@ -48,6 +48,12 @@ class Tensor
         aData = updateList(aData, :add, :matrix, oTensor.aData)
         return self
 
+    # New: Add Scalar (For Epsilon in Adam)
+    func add_scalar nVal
+        # FastPro Case 205: Add to Items
+        aData = updateList(aData, :add, :items, nVal)
+        return self
+    
     func sub oTensor
         checkDimensions(oTensor)
         # Manual Sub Loop for debugging
@@ -57,18 +63,12 @@ class Tensor
             next
         next
         return self
-        
-    # New: Add Scalar (For Epsilon in Adam)
-    func add_scalar nVal
-        # FastPro Case 205: Add to Items
-        updateList(aData, :add, :items, nVal)
-        return self
-
+    
     /*func sub oTensor
         checkDimensions(oTensor)
-        updateList(aData, :sub, :matrix, oTensor.aData)
-        return self
-    */
+        aData = updateList(aData, :sub, :matrix, oTensor.aData)
+        return self*/
+    
     func mul oTensor
         checkDimensions(oTensor)
         # Using manual loop until :emul is fully deployed
@@ -132,7 +132,7 @@ class Tensor
             raise("Dimension Mismatch in MatMul")
         ok
         newData = updateList(aData, :mul, :matrix, oTensor.aData)
-        oRes = new Tensor(self.nRows, oTensor.nCols)
+        oRes = new Tensor(nRows, oTensor.nCols)
         oRes.aData = newData
         return oRes
 

@@ -5,7 +5,7 @@ load "stdlib.ring"
 load "../src/ringml.ring"
 
 
-decimals(10)
+decimals(3)
 
 see "=== RingML Visual Demo (Guaranteed Learning) ===" + nl
 
@@ -45,11 +45,11 @@ testLoader  = new DataLoader(testDataset, batch_size)
 
 # 4. Build Model
 model = new Sequential
-model.add(new Dense(2, 64))
+model.add(new Dense(2, 32))
 model.add(new Tanh)
-model.add(new Dense(64, 32))
+model.add(new Dense(32, 16))
 model.add(new Tanh)
-model.add(new Dense(32, 3))
+model.add(new Dense(16, 3))
 model.add(new Softmax)
 
 model.summary()
@@ -57,8 +57,8 @@ model.summary()
 
 # 5. Training
 criterion = new CrossEntropyLoss
-optimizer = new Adam(0.001) # Fast Learning Rate
-nEpochs   = 50
+optimizer = new Adam(0.01) # Fast Learning Rate
+nEpochs   = 20
 
 viz = new TrainingVisualizer(nEpochs, trainLoader.nBatches)
 
@@ -81,7 +81,7 @@ for epoch = 1 to nEpochs
         for l in model.getLayers() optimizer.update(l) next
         
         # Slow down slightly so human eye can see the bar moving
-        //sleep(0.01) 
+        sleep(0.01) 
         viz.update(epoch, b, loss, 0)
     next
     

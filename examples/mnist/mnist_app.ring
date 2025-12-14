@@ -32,11 +32,11 @@ model.add(new Dense(64, 10))
 model.add(new Softmax)
 
 # 3. Load Weights
-if !fexists("model/mnist_model.rdata")
-    see "Error: Model file not found. Run mnist_train.ring first." + nl
+if !fexists("model/mnist_split_model.rdata")
+    see "Error: Model file not found. Run mnist_split_model.ring first." + nl
     bye
 ok
-model.loadWeights("model/mnist_model.rdata")
+model.loadWeights("model/mnist_split_model.rdata")
 model.evaluate() # Disable dropout logic if any
 
 # 4. Interactive Loop

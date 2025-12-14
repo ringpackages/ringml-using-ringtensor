@@ -18,7 +18,7 @@ modelA.add(new Sigmoid)
 optimizer = new SGD(0.5)
 criterion = new MSELoss
 
-for epoch = 1 to 20000
+for epoch = 1 to 200
     preds = modelA.forward(inputs)
     grad  = criterion.backward(preds, targets)
     modelA.backward(grad)

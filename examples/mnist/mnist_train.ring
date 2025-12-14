@@ -41,15 +41,15 @@ loader = new DataLoader(dataset, batch_size)
 model = new Sequential
 
 # Flattened Image Input (28*28 = 784)
-model.add(new Dense(784, 32))   
+model.add(new Dense(784, 128))   
 model.add(new ReLU)
 model.add(new Dropout(0.2)) # Prevent overfitting
 
-model.add(new Dense(32, 16))  
+model.add(new Dense(128, 64))  
 model.add(new ReLU)
 model.add(new Dropout(0.2))
 
-model.add(new Dense(16, 10)) # 10 Digits
+model.add(new Dense(64, 10)) # 10 Digits
 model.add(new Softmax)
 
 model.summary()
@@ -57,7 +57,7 @@ model.summary()
 # 4. Train
 criterion = new CrossEntropyLoss
 optimizer = new Adam(0.001) # Standard LR for Adam
-nEpochs   = 5 # MNIST learns fast
+nEpochs   = 10 # MNIST learns fast
 
 # --- SETUP VISUALIZER ---
 viz = new TrainingVisualizer(nEpochs, loader.nBatches)
@@ -88,17 +88,12 @@ for epoch = 1 to nEpochs
         
         # --- UPDATE VISUALIZER (Every 5 batches to be smooth) ---
         if b % 5 = 0
-            # Calculate rough accuracy for display (optional, or just pass 0)
-            # Here we just pass 0 for batch acc to save speed, or calculate it if fast enough.
-            # Passing 0 for batch accuracy, focusing on Loss color.
             viz.update(epoch, b, loss, 0)
         ok
     next
     
     avgLoss = epochLoss / loader.nBatches
     
-    # see nl + "Epoch " + epoch + " Avg Loss: " + avgLoss + nl
-
     viz.finishEpoch(epoch, avgLoss, 0)
 next
 

@@ -8,15 +8,8 @@ class TrainingVisualizer
     nTotalBatches
     
     # Spinner animation frames
-    aSpinner = ["|", "/", "--", "\\"]
+    aSpinner = ["|", "/", "-", "\"]
     nSpinIdx = 1
-
-    # ASCII Brain Icon lines
-    aBrain = [
-        "   (  )   ",
-        "  (    )  ",
-        "   (  )   "
-    ]
 
     func init nEpochs, nBatches
         nTotalEpochs  = nEpochs
@@ -24,7 +17,7 @@ class TrainingVisualizer
         
         # Initial Clear/Header
         cc_print(CC_FG_CYAN, "==========================================" + nl)
-        cc_print(CC_FG_CYAN, "      RingML Training Dashboard       " + nl)
+        cc_print(CC_FG_CYAN, "*      RingML Training Dashboard         *" + nl)
         cc_print(CC_FG_CYAN, "==========================================" + nl)
 
     func update nEpoch, nBatch, nLoss, nAcc
@@ -75,7 +68,8 @@ class TrainingVisualizer
         cc_print(nLossColor, "" + nLoss + " ")
         
         cc_print(CC_FG_WHITE, "| Accuracy: ")
-        cc_print(nAccColor, "" + nAcc ) see " %"
+        cc_print(nAccColor, "" + nAcc ) 
+        see " %"
         
         # No new line at the end to allow overwriting!
 
