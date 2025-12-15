@@ -5,11 +5,11 @@ aPackageInfo = [
 	:developer = "Azzeddine Remmal",
 	:email = "azzeddine.remmal@gmail.com",
 	:license = "MIT License",
-	:version = "1.0.7",
+	:version = "1.0.8",
 	:ringversion = "1.24",
 	:versions = 	[
 		[
-			:version = "1.0.7",
+			:version = "1.0.8",
 			:branch = "master"
 		]
 	],
@@ -75,11 +75,13 @@ aPackageInfo = [
 		"samples/UsingRingML/Chess_End_Game/chess_train_split.ring",
 		"samples/UsingRingML/Chess_End_Game/chess_utils.ring",
 		"samples/UsingRingML/Chess_End_Game/data/chess.csv",
+		"samples/UsingRingML/Chess_End_Game/model/chess_model_lite.rdata",
 		"samples/UsingRingML/classify_demo.ring",
 		"samples/UsingRingML/classify_demo2.ring",
 		"samples/UsingRingML/fast_viz_demo.ring",
 		"samples/UsingRingML/loader_demo.ring",
 		"samples/UsingRingML/mnist/data/mnist_test.csv",
+		"samples/UsingRingML/mnist/model/mnist_model.rdata",
 		"samples/UsingRingML/mnist/mnist_app.ring",
 		"samples/UsingRingML/mnist/mnist_dataset.ring",
 		"samples/UsingRingML/mnist/mnist_train.ring",

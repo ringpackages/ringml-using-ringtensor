@@ -101,6 +101,7 @@ for epoch = 1 to nEpochs
         
         # --- UPDATE VISUALIZER (Every 5 batches to be smooth) ---
         if b % 5 = 0 viz.update(epoch, b, loss, 0) ok
+        callgc()
     next
     
     avgTrainLoss = trainLoss / trainLoader.nBatches
@@ -151,7 +152,7 @@ for epoch = 1 to nEpochs
     
     # --- FINISH EPOCH VISUALIZATION ---
     viz.finishEpoch(epoch, avgTrainLoss, accuracy)
-        
+      
     if epoch % 2 = 0 callgc() ok
 next
 

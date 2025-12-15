@@ -31,27 +31,44 @@ if len(aRawsData) > 0
     ok
 ok
 
+# --- OPTIMIZATION : Subsampling (Take only 5000 random samples) ---
+see "Optimizing Dataset Size..." + nl
+nLiteSize = 2500
+if len(aRawsData) > nLiteSize
+    aLiteData = []
+    # Shuffle first to get random variety
+    splitter = new DataSplitter
+    splitter.shuffle(aRawsData)
+    
+    # Pick first 5000
+    for i = 1 to nLiteSize
+        aLiteData + aRawsData[i]
+    next
+    aRawsData = aLiteData
+    see "Reduced dataset to " + nLiteSize + " samples for speed." + nl
+ok
+
 nTotal = len(aRawsData)
 see "Loaded " + nTotal + " images." + nl
 
 # 2. Setup Dataset & Loader
 dataset = new MnistDataset(aRawsData)
-batch_size = 256
+batch_size = 64
 loader = new DataLoader(dataset, batch_size)
 
 # 3. Build Model (784 -> 128 -> 64 -> 10)
 model = new Sequential
 
 # Flattened Image Input (28*28 = 784)
-model.add(new Dense(784, 128))   
+model.add(new Dense(784, 64))   
 model.add(new ReLU)
 model.add(new Dropout(0.2)) # Prevent overfitting
 
-model.add(new Dense(128, 64))  
+model.add(new Dense(64, 32))  
 model.add(new ReLU)
 model.add(new Dropout(0.2))
 
-model.add(new Dense(64, 10)) # 10 Digits
+model.add(new Dense(32, 10)) # 10 Digits
 model.add(new Softmax)
 
 model.summary()
@@ -85,13 +102,12 @@ for epoch = 1 to nEpochs
         model.backward(grad)
         
         for layer in model.getLayers() optimizer.update(layer) next
-        
-        if b % 10 = 0 callgc() ok
-        
+
         # --- UPDATE VISUALIZER (Every 5 batches to be smooth) ---
-        if b % 5 = 0
-            viz.update(epoch, b, loss, 0)
-        ok
+        if b % 5 = 0 viz.update(epoch, b, loss, 0) ok
+        
+        # --- GC (Every 2 batches) ---
+        if b % 2 = 0 callgc() ok
     next
     
     avgLoss = epochLoss / loader.nBatches

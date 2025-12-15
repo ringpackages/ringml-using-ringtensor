@@ -24,21 +24,21 @@ see "Loaded " + nTotal + " test images." + nl
 
 # 2. Build Model Structure (Must match training)
 model = new Sequential
-model.add(new Dense(784, 128))   
+model.add(new Dense(784, 64))   
 model.add(new ReLU)
 # No need to add Dropout here, as loadWeights doesn't load dropout state anyway
 # and we are in eval mode by default or explicit call.
-model.add(new Dense(128, 64))  
+model.add(new Dense(64, 32))  
 model.add(new ReLU)
-model.add(new Dense(64, 10)) 
+model.add(new Dense(32, 10)) 
 model.add(new Softmax)
 
 # 3. Load Weights
-if !fexists("model/mnist_split_model.rdata")
-    see "Error: Model file not found. Run mnist_split_model.ring first." + nl
+if !fexists("model/mnist_model.rdata")
+    see "Error: Model file not found. Run mnist_train.ring first." + nl
     bye
 ok
-model.loadWeights("model/mnist_split_model.rdata")
+model.loadWeights("model/mnist_model.rdata")
 model.evaluate() # Disable dropout logic if any
 
 # 4. Interactive Loop
