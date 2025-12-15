@@ -7,7 +7,7 @@
 
 
 load "consolecolors.ring"
-load "fastpro.ring"
+load "ringtensor.ring"
 load "core/tensor.ring"
 load "utils/serializer.ring"
 load "data/dataset.ring"

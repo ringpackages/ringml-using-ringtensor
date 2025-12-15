@@ -2,7 +2,7 @@
 # Description: Core Tensor class - Updated for Adam Optimizer
 # Author: Azzeddine Remmal
 
-load "fastpro.ring"
+
 
 func Randomize(nSeed)
     return Random(nSeed)
@@ -15,13 +15,18 @@ class Tensor
     func init nR, nC
         self.nRows = nR
         self.nCols = nC
+        
+        # Initialize list structure (List of Lists)
         aData = list(self.nRows)
         for i = 1 to self.nRows
             aData[i] = list(self.nCols)
+            # Init to 0.0 to ensure float type
+            for j = 1 to self.nCols aData[i][j] = 0.0 next
         next
         return self
         
     func copy
+        # Create a new independent Tensor instance
         oNew = new Tensor(nRows, nCols)
         for r = 1 to nRows
             oNew.aData[r] = aData[r] 
@@ -29,190 +34,158 @@ class Tensor
         return oNew
 
     # --- Initialization ---
+
     func random
-        updateList(aData, :random, :matrix)
+        # Uniform random 0.0 to 1.0 (C-Level)
+        tensor_random(aData)
         return self
 
     func zeros
-        aData = updateList(aData, :zerolike, :matrix)
+        tensor_fill(aData, 0.0)
         return self
 
     func fill nVal
-        aData = updateList(aData, :fill, :matrix, nVal)
+        tensor_fill(aData, nVal)
         return self
 
-    # --- Math Operations ---
+    # --- Math Operations (Element-Wise) ---
     
     func add oTensor
         checkDimensions(oTensor)
-        aData = updateList(aData, :add, :matrix, oTensor.aData)
+        tensor_add(aData, oTensor.aData)
         return self
 
-    # New: Add Scalar (For Epsilon in Adam)
-    func add_scalar nVal
-        # FastPro Case 205: Add to Items
-        aData = updateList(aData, :add, :items, nVal)
-        return self
-    
     func sub oTensor
         checkDimensions(oTensor)
-        # Manual Sub Loop for debugging
-        for r = 1 to nRows
-            for c = 1 to nCols
-                aData[r][c] -= oTensor.aData[r][c]
-            next
-        next
+        tensor_sub(aData, oTensor.aData)
         return self
-    
-    /*func sub oTensor
-        checkDimensions(oTensor)
-        aData = updateList(aData, :sub, :matrix, oTensor.aData)
-        return self*/
-    
+
     func mul oTensor
         checkDimensions(oTensor)
-        # Using manual loop until :emul is fully deployed
-        for r = 1 to nRows
-             for c = 1 to nCols
-                 aData[r][c] *= oTensor.aData[r][c]
-             next
-        next
+        # Element-wise Multiplication (Hadamard Product)
+        tensor_mul_elem(aData, oTensor.aData)
         return self
-
-    # New: Element-Wise Division (For Adam)
+        
     func div oTensor
         checkDimensions(oTensor)
-        for r = 1 to nRows
-             for c = 1 to nCols
-                 # Avoid division by zero check if handled by epsilon outside
-                 aData[r][c] /= oTensor.aData[r][c]
-             next
-        next
+        # Element-wise Division with zero safety
+        tensor_div(aData, oTensor.aData)
         return self
+
+    # --- Scalar Operations ---
 
     func scalar_mul nVal
-        aData = updateList(aData, :scalar, :matrix, nVal)
+        tensor_scalar_mul(aData, nVal)
+        return self
+        
+    func add_scalar nVal
+        tensor_add_scalar(aData, nVal)
         return self
 
+    # --- Transformations ---
+
+    func square
+        tensor_square(aData)
+        return self
+    
+    func sqrt
+        tensor_sqrt(aData)
+        return self
+        
+    func exp_func
+        tensor_exp(aData)
+        return self
+
+    # --- Reductions ---
+
+    func mean
+        # Returns a Number
+        return tensor_mean(aData)
+
     func sum nAxis
-        newData = updateList(aData, :sum, :matrix, nAxis)
+        # tensor_sum(List, Axis) -> Returns New List structure
+        # Axis 1 = Sum Rows (Result: Rows x 1)
+        # Axis 0 = Sum Cols (Result: 1 x Cols)
+        newData = tensor_sum(aData, nAxis)
+        
         if nAxis = 1 
             oRes = new Tensor(nRows, 1)
         else
             oRes = new Tensor(1, nCols)
         ok
+        
         oRes.aData = newData
         return oRes
-        
-    func square
-        aData = updateList(aData, :square, :matrix)
-        return self
-    
-    # New: Square Root (For Adam)
-    func sqrt
-        # FastPro Case 2206
-        aData = updateList(aData, :sqrt, :matrix)
-        return self
-        
-    func mean
-        nRes = updateList(aData, :mean, :matrix)
-        return nRes
-
-    func exp_func
-        for r = 1 to nRows
-            for c = 1 to nCols
-                aData[r][c] = exp(aData[r][c])
-            next
-        next
-        return self
 
     # --- Matrix Operations ---
+
     func matmul oTensor
         if self.nCols != oTensor.nRows
             raise("Dimension Mismatch in MatMul")
         ok
-        newData = updateList(aData, :mul, :matrix, oTensor.aData)
+        
+        # C Function returns new list
+        newData = tensor_matmul(aData, oTensor.aData)
+        
         oRes = new Tensor(nRows, oTensor.nCols)
         oRes.aData = newData
         return oRes
 
     func transpose
-        aData = updateList(aData, :transpose, :matrix)
+        # C Function returns new list
+        newData = tensor_transpose(aData)
+        
+        # Update self with new data and swapped dimensions
+        aData = newData
         nTemp = nRows
         nRows = nCols
         nCols = nTemp
         return self
 
     # --- Activations ---
+    
     func sigmoid
-        aData = updateList(aData, :sigmoid, :matrix)
+        tensor_sigmoid(aData)
         return self
 
     func sigmoid_prime
-        aData = updateList(aData, :sigmoidprime, :matrix)
+        tensor_sigmoid_prime(aData)
         return self
 
     func relu
-        aData = updateList(aData, :relu, :matrix)
+        tensor_relu(aData)
         return self
         
     func relu_prime
-        aData = updateList(aData, :reluprime, :matrix)
+        tensor_relu_prime(aData)
         return self
-
-    func softmax
-        aData = updateList(aData, :softmax, :matrix)
-        return self
-
-    # --- Tanh ---
+        
     func tanh
-        aData = updateList(aData, :tanh, :matrix)
+        tensor_tanh(aData)
         return self    
 
     func tanh_prime
-        # Derivative of Tanh is: 1 - Tanh(x)^2
-        # We assume 'self' is already the output of Tanh (y)
-        # So we calculate: 1 - y^2
-        for r = 1 to nRows
-            for c = 1 to nCols
-                y = aData[r][c]
-                aData[r][c] = 1.0 - (y * y)
-            next
-        next
+        tensor_tanh_prime(aData)
         return self
 
-    # --- Utilities for Dropout ---
+    func softmax
+        # Numerically Stable Softmax (C-Level)
+        tensor_softmax(aData)
+        return self
+
+    # --- Regularization ---
 
     func apply_dropout nRate
-        # nRate: Probability of dropping a neuron (e.g. 0.2)
-        # We need to scale the remaining neurons by (1 / (1 - nRate))
-        # to maintain the expected sum.
-        
-        nScale = 1.0 / (1.0 - nRate)
-        nKeepProb = 1.0 - nRate
-        
-        # We assume Random is seeded globally or sufficiently random
-        for r = 1 to nRows
-            for c = 1 to nCols
-                # Random 0..1
-                nRand = Randomize(10000) / 10000.0
-                
-                if nRand < nRate
-                    # Drop (Set to 0)
-                    aData[r][c] = 0.0
-                else
-                    # Keep and Scale
-                    aData[r][c] = 1.0 * nScale
-                ok
-            next
-        next
+        tensor_dropout(aData, nRate)
         return self
 
     # --- Utilities ---
+    
     func print_shape
         see "(" + nRows + ", " + nCols + ")" + nl
 
     func decimals nPlaces
+        # Helper for display formatting only
         for r = 1 to nRows
             for c = 1 to nCols
                 nFactor = pow(10, nPlaces)
@@ -224,7 +197,7 @@ class Tensor
 
     func checkDimensions oTensor
         if nRows != oTensor.nRows or nCols != oTensor.nCols
-            raise("Dimension Mismatch")
+            raise("Dimension Mismatch: (" + nRows + "," + nCols + ") vs (" + oTensor.nRows + "," + oTensor.nCols + ")")
         ok
 
     func print
