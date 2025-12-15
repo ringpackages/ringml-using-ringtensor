@@ -20,12 +20,12 @@ aPackageInfo = [
 			:providerusername = ""
 		],
 		[
-			:name = "consolecolors",
+			:name = "ringconsolecolors",
 			:version = "1.0.7",
 			:providerusername = ""
 		],
 		[
-			:name = "fastpro",
+			:name = "ringfastpro",
 			:version = "1.0.8",
 			:providerusername = ""
 		]
