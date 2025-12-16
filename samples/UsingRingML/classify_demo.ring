@@ -1,52 +1,52 @@
 # File: examples/classify_demo.ring
-# Description: Multi-class classification example
+# Description: Multi-class classification example (Improved)
 # Author: Azzeddine Remmal
+# File: examples/classify_demo_fixed.ring
 
-load "ringml.ring"
+load "../src/ringml.ring" # تأكد من المسار
+load "stdlib.ring"
 
 decimals(8) 
 
-see "=== RingML Multi-Class Classification Demo ===" + nl
+see "=== RingML Multi-Class Classification Demo (Fixed) ===" + nl
 
-# 1. Data: 3 Samples, 4 Features each
-# Sample 1: [1,1,0,0] -> Class 1 [1,0,0]
-# Sample 2: [0,0,1,1] -> Class 2 [0,1,0]
-# Sample 3: [0,1,1,0] -> Class 3 [0,0,1]
-
-inputs = new Tensor(3, 4)
-inputs.aData = [
+# 1. Data (Define as Lists first)
+aInputs = [
     [1, 1, 0, 0],
     [0, 0, 1, 1],
     [0, 1, 1, 0]
 ]
 
-targets = new Tensor(3, 3) # One-Hot Encoded
-targets.aData = [
+aTargets = [
     [1, 0, 0],
     [0, 1, 0],
     [0, 0, 1]
 ]
 
+# Convert to Tensors using Helper
+inputs  = MakeTensor(aInputs)
+targets = MakeTensor(aTargets)
+
 # 2. Model
 model = new Sequential
-model.add(new Dense(4, 8)) # Input 4 -> Hidden 8 (Increased neurons)
-model.add(new ReLU)
-model.add(new Dense(8, 3)) # Hidden 8 -> Output 3
+model.add(new Dense(4, 8)) 
+model.add(new Sigmoid)     
+model.add(new Dense(8, 3)) 
 model.add(new Softmax)     
 
 # 3. Training
 criterion = new CrossEntropyLoss
-optimizer = new SGD(0.1)
+optimizer = new SGD(0.5) 
 
 see "Training..." + nl
-for epoch = 1 to 5000
+for epoch = 1 to 3000
     # Forward
     preds = model.forward(inputs)
     
     # Loss
     loss = criterion.forward(preds, targets)
     
-    if epoch % 1000 = 0
+    if epoch % 500 = 0
         see "Epoch " + epoch + " Loss: " + loss + nl
     ok
     
@@ -66,3 +66,18 @@ final.print()
 
 see "=== Expected Targets ===" + nl
 targets.print()
+
+# --- Helper Function ---
+func MakeTensor aList
+    nRows = len(aList)
+    nCols = len(aList[1])
+    
+    oTen = new Tensor(nRows, nCols)
+    
+    for r = 1 to nRows
+        for c = 1 to nCols
+            # Use setVal instead of aData[r][c]
+            oTen.setVal(r, c, aList[r][c])
+        next
+    next
+    return oTen

@@ -8,50 +8,60 @@
 # DataLoader: For data processing.
 # Summary: To display the structure.
 # SaveWeights: For saving.
+# File: examples/chess_final_model.ring
+# Description: Training the Final Chess Model (All Data)
 
-load "ringml.ring"
+load "stdlib.ring"
+load "../src/ringml.ring"             # تصحيح المسار
+load "../src/utils/visualizer.ring"   # ضروري للعرض
 load "chess_utils.ring"
 load "chess_dataset.ring"
 load "csvlib.ring"
-load "stdlib.ring"
 
-# Better precision for console output
 decimals(5)
 
 see "=== RingML Final Chess Model ===" + nl
 
 # 1. Load Data
 cFile = "data/chess.csv"
-if !fexists(cFile) raise("File missing") ok
+if !fexists(cFile) raise("File missing: " + cFile) ok
 
 see "Reading CSV..." + nl
 aRawsData = CSV2List( read(cFile) )
-if len(aRawsData) > 0 del(aRawsData, 1) ok 
+
+# Clean Header
+if len(aRawsData) > 0 
+    if lower(aRawsData[1][1]) = "whitekingfile" or lower(aRawsData[1][1]) = "label"
+        del(aRawsData, 1)
+    ok
+ok
 
 # 2. Setup Dataset & Loader
+# Note: We use ALL data for the final model (No split)
 dataset = new ChessDataset(aRawsData)
 batch_size = 256 
 loader = new DataLoader(dataset, batch_size)
 
-see "Dataset: " + dataset.length() + " samples." + nl
+see "Dataset: " + dataset.len() + " samples." + nl
 see "Batches: " + loader.nBatches + " per epoch." + nl
 
-# 3. Build Advanced Architecture
+# 3. Build Architecture
+# Topology: 6 -> 64 -> 32 -> 18
 nClasses = 18
 model = new Sequential
 
-# Input -> Dense(32) -> Tanh -> Dropout(20%)
-model.add(new Dense(6, 32))   
+# Input Layer (6 -> 64)
+model.add(new Dense(6, 64))   
 model.add(new Tanh)        
 model.add(new Dropout(0.2))
 
-# Hidden -> Dense(16) -> Tanh -> Dropout(20%)
-model.add(new Dense(32, 16))  
+# Hidden Layer (64 -> 32)
+model.add(new Dense(64, 32))  
 model.add(new Tanh)
 model.add(new Dropout(0.2))
 
-# Output -> Dense(18) -> Softmax
-model.add(new Dense(16, nClasses)) 
+# Output Layer (32 -> 18)
+model.add(new Dense(32, nClasses)) 
 model.add(new Softmax)
 
 # 4. Print Summary
@@ -59,8 +69,8 @@ model.summary()
 
 # 5. Training Setup
 criterion = new CrossEntropyLoss
-optimizer = new Adam(0.01) 
-nEpochs   = 50 # Increased epochs for better results
+optimizer = new Adam(0.005) 
+nEpochs   = 10 
 
 # --- SETUP VISUALIZER ---
 viz = new TrainingVisualizer(nEpochs, loader.nBatches)
@@ -91,11 +101,9 @@ for epoch = 1 to nEpochs
         # Optimizer Step
         for layer in model.getLayers() optimizer.update(layer) next
         
-        # --- UPDATE VISUALIZER (Every 5 batches to be smooth) ---
+        # --- UPDATE VISUALIZER ---
         if b % 5 = 0
-            # Calculate rough accuracy for display (optional, or just pass 0)
-            # Here we just pass 0 for batch acc to save speed, or calculate it if fast enough.
-            # Passing 0 for batch accuracy, focusing on Loss color.
+            # Passing 0 for accuracy to save time in this loop
             viz.update(epoch, b, loss, 0)
         ok
     next
@@ -103,9 +111,10 @@ for epoch = 1 to nEpochs
     avgLoss = epochLoss / loader.nBatches
     
     # --- FINISH EPOCH VISUALIZATION ---
+    # We pass 0 as validation accuracy since we are training on the full set
     viz.finishEpoch(epoch, avgLoss, 0)
     
-    
+    # GC Management
     if epoch % 5 = 0 callgc() ok
 next
 
@@ -115,5 +124,6 @@ see "Training Time: " + ((clock()-tTotal)/clockspersecond()) + "s" + nl
 model.evaluate()
 
 # 7. Save Model
-model.saveWeights("model/chess_final.rdata")
+# Ensure 'model' folder exists or save to root
+model.saveWeights("chess_final.rdata") 
 see "Model Saved Successfully." + nl

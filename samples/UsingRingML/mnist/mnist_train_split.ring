@@ -7,7 +7,7 @@ load "ringml.ring"
 load "mnist_dataset.ring"
 load "csvlib.ring"
 
-decimals(4)
+decimals(8)
 
 see "=== RingML MNIST (Train/Test Split Strategy) ===" + nl
 
@@ -17,13 +17,12 @@ if !fexists(cFile) raise("File missing") ok
 
 see "Reading CSV..." + nl
 aRawsData = CSV2List( read(cFile) )
-
 # Remove Header if exists
 if len(aRawsData) > 0 
     if lower(aRawsData[1][1]) = "label" del(aRawsData, 1) ok
 ok
 
-# 2. Use DataSplitter (Refactored)
+# 2. Use DataSplitter
 see "Splitting Data (70% Train, 30% Test)..." + nl
 
 splitter = new DataSplitter
@@ -53,17 +52,17 @@ testLoader   = new DataLoader(testDataset, batch_size)
 model = new Sequential
 
 # Input(784) -> Dense(128) -> ReLU -> Dropout
-model.add(new Dense(784, 32))   
+model.add(new Dense(784, 64))   
 model.add(new ReLU)
 model.add(new Dropout(0.2)) 
 
 # Hidden(64) -> ReLU -> Dropout
-model.add(new Dense(32, 16))  
+model.add(new Dense(64, 32))  
 model.add(new ReLU)
 model.add(new Dropout(0.2))
 
 # Output(10) -> Softmax
-model.add(new Dense(16, 10)) 
+model.add(new Dense(32, 10)) 
 model.add(new Softmax)
 
 model.summary()
@@ -71,13 +70,13 @@ model.summary()
 # 5. Training Setup
 criterion = new CrossEntropyLoss
 optimizer = new Adam(0.01) 
-nEpochs   = 2
+nEpochs   = 20
 
 # --- SETUP VISUALIZER ---
 viz = new TrainingVisualizer(nEpochs, trainLoader.nBatches)
 
 # 6. Training Loop
-see nl + "Starting Training..." + nl
+see nl # سطر جديد للترتيب
 tTotal = clock()
 
 for epoch = 1 to nEpochs
@@ -99,9 +98,11 @@ for epoch = 1 to nEpochs
         
         for layer in model.getLayers() optimizer.update(layer) next
         
-        # --- UPDATE VISUALIZER (Every 5 batches to be smooth) ---
+        # --- UPDATE VISUALIZER ---
         if b % 5 = 0 viz.update(epoch, b, loss, 0) ok
-        callgc()
+        
+        # GC Management (Important for Loop inside Loop)
+        if b % 50 = 0 callgc() ok
     next
     
     avgTrainLoss = trainLoss / trainLoader.nBatches
@@ -118,25 +119,28 @@ for epoch = 1 to nEpochs
         
         preds = model.forward(inputs)
         
-        # Calculate Accuracy
+        # Calculate Accuracy (FIXED for C-Pointers)
         nBatchSize = preds.nRows
         for i = 1 to nBatchSize
             # Get ArgMax for Prediction
             predIdx = 0
-            predMax = -1
+            predMax = -1000
             for k = 1 to 10 
-                if preds.aData[i][k] > predMax 
-                    predMax = preds.aData[i][k]
+                # FIX: Must use getVal(row, col) - Direct access [] fails with pointers
+                val = preds.getVal(i, k)
+                if val > predMax 
+                    predMax = val
                     predIdx = k
                 ok
             next
             
             # Get ArgMax for Target
             targetIdx = 0
-            targetMax = -1
+            targetMax = -1000
             for k = 1 to 10
-                if targets.aData[i][k] > targetMax
-                    targetMax = targets.aData[i][k]
+                val = targets.getVal(i, k)
+                if val > targetMax
+                    targetMax = val
                     targetIdx = k
                 ok
             next
@@ -153,7 +157,7 @@ for epoch = 1 to nEpochs
     # --- FINISH EPOCH VISUALIZATION ---
     viz.finishEpoch(epoch, avgTrainLoss, accuracy)
       
-    if epoch % 2 = 0 callgc() ok
+    callgc() 
 next
 
 see "Total Time: " + ((clock()-tTotal)/clockspersecond()) + "s" + nl

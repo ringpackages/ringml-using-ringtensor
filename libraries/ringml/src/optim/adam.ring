@@ -37,24 +37,29 @@ class Adam
         oLayer.adam_t++
         nT = oLayer.adam_t
 
-        # --- FUSED KERNEL UPDATE (Single C Call per Tensor) ---
+        # --- Fused Kernel Update (Passing Pointers) ---
         
         # Update Weights
         tensor_update_adam(
-            oLayer.oWeights.aData, 
-            oLayer.oGradWeights.aData, 
-            oLayer.adam_mw.aData, 
-            oLayer.adam_vw.aData, 
+            oLayer.oWeights.pData, 
+            oLayer.oGradWeights.pData, 
+            oLayer.adam_mw.pData, 
+            oLayer.adam_vw.pData, 
             nLR, nBeta1, nBeta2, nEpsilon, nT
         )
 
         # Update Bias
         tensor_update_adam(
-            oLayer.oBias.aData, 
-            oLayer.oGradBias.aData, 
-            oLayer.adam_mb.aData, 
-            oLayer.adam_vb.aData, 
+            oLayer.oBias.pData, 
+            oLayer.oGradBias.pData, 
+            oLayer.adam_mb.pData, 
+            oLayer.adam_vb.pData, 
             nLR, nBeta1, nBeta2, nEpsilon, nT
         )
 
-    
+    func hasAttribute oObj, cName
+        aAttrs = attributes(oObj)
+        for a in aAttrs
+            if lower(a) = lower(cName) return true ok
+        next
+        return false

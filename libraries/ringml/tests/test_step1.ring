@@ -1,49 +1,61 @@
-load "../src/ringml.ring"
 
-see "=== RingML Core Tensor Tests ===" + nl
+load "ringml.ring"
 
-# 1. Initialization
-see "1. Initialization Tests:" + nl
-t1 = new Tensor(2, 2) { fill(1) }
-t2 = new Tensor(2, 2) { fill(2) }
-see "   T1 (Filled with 1):" 
-t1.print()
+decimals(4)
+see "=== Step 1: Core Tensor Operations (Pointer Mode) ===" + nl
 
-# 2. Element-wise Addition
-see "2. Addition Test (T1 + T2):" + nl
-t1.add(t2) 
-t1.print()
+# 1. Initialization & Fill
+see "1. Testing Init & Fill..." + nl
+t1 = new Tensor(2, 2)
+t1.fill(1.5)
+val = t1.getVal(1, 1)
 
-# 3. Scalar Multiplication
-see "3. Scalar Multiplication (T1 * 2):" + nl
-t1.scalar_mul(2) 
-t1.print()
+if val = 1.5
+    see "   [PASS] Init/Fill working." + nl
+else
+    see "   [FAIL] Expected 1.5, got " + val + nl
+ok
 
-# 4. Matrix Multiplication (MatMul)
-see "4. Matrix Multiplication Test:" + nl
-matA = new Tensor(1, 2) { 
-    aData = [[1, 2]] 
-}
-matB = new Tensor(2, 1) { 
-    aData = [[3], [4]] 
-}
+# 2. Addition
+see "2. Testing Add..." + nl
+t2 = new Tensor(2, 2)
+t2.fill(0.5)
+t1.add(t2) # 1.5 + 0.5 = 2.0
+val = t1.getVal(1, 1)
 
-see "   MatA (1x2): " + nl see matA.aData see nl
-see "   MatB (2x1): " + nl see matB.aData see nl
+if val = 2.0
+    see "   [PASS] Add working." + nl
+else
+    see "   [FAIL] Expected 2.0, got " + val + nl
+ok
 
-# (1*3 + 2*4) = 3 + 8 = 11
-# Use matmul for (M x N) * (N x P)
-res = matA.matmul(matB)
-see "   Result (Should be [[11]]):" + nl
-res.print()
+# 3. MatMul
+see "3. Testing MatMul..." + nl
+# A = [[1, 2]] (1x2)
+mA = new Tensor(1, 2)
+mA.setVal(1, 1, 1.0)
+mA.setVal(1, 2, 2.0)
 
-# 5. Transpose
-see "5. Transpose Test:" + nl
-transT = new Tensor(2, 1) { 
-    aData = [[1],[2]]
-}
-see "   Original (2x1):" + nl transT.print()
-transT.transpose()
-see "   Transposed (1x2):" + nl transT.print()
+# B = [[3], [4]] (2x1)
+mB = new Tensor(2, 1)
+mB.setVal(1, 1, 3.0)
+mB.setVal(2, 1, 4.0)
 
-see "=== All Tests Completed ===" + nl
+# Res = (1*3 + 2*4) = 11
+mRes = mA.matmul(mB)
+resVal = mRes.getVal(1, 1)
+
+if resVal = 11.0
+    see "   [PASS] MatMul working (11.0)." + nl
+else
+    see "   [FAIL] Expected 11.0, got " + resVal + nl
+ok
+
+# 4. Transpose
+see "4. Testing Transpose..." + nl
+mT = mA.transpose() # Should be (2, 1) -> [[1], [2]]
+if mT.nRows = 2 and mT.getVal(2, 1) = 2.0
+    see "   [PASS] Transpose working." + nl
+else
+    see "   [FAIL] Transpose dimensions or values wrong." + nl
+ok

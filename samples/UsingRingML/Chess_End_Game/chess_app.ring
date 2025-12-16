@@ -2,15 +2,19 @@
 # Description: Console App to predict Chess End-Game result
 # Author: Azzeddine Remmal
 
-load "ringml.ring"
-load "chess_utils.ring"
+# File: examples/Chess_End_Game/chess_app.ring
+# Description: Inference App (Fixed for C-Pointers)
 
+load "stdlib.ring"
+load "../../src/ringml.ring" # تأكد من المسار الصحيح للملف
+load "chess_utils.ring"
 
 see "==========================================" + nl
 see "      Chess End-Game Predictor (AI)       " + nl
 see "==========================================" + nl
 
-# 1. Build Model Architecture (Must match training)
+# 1. Build Model Architecture (Must match chess_train_fast.ring)
+# Architecture: 6 -> 32 -> 16 -> 18
 model = new Sequential
 model.add(new Dense(6, 32))   
 model.add(new Sigmoid)        
@@ -20,13 +24,19 @@ model.add(new Dense(16, 18))
 model.add(new Softmax)
 
 # 2. Load Weights
-if !fexists("model/chess_model_fast.rdata")
-    see "Error: Model file 'chess_model_fast.rdata' not found." + nl
-    see "Please run chess_train_fast.ring first." + nl
-    bye
+cModelFile = "model/chess_model_fast.rdata"
+
+if !fexists(cModelFile)
+    # Try looking in current folder
+    cModelFile = "chess_model_fast.rdata"
+    if !fexists(cModelFile)
+        see "Error: Model file not found." + nl
+        bye
+    ok
 ok
 
-model.loadWeights("model/chess_model_fast.rdata")
+model.loadWeights(cModelFile)
+model.evaluate() # Important: Switch to Eval mode
 see "Model loaded successfully." + nl + nl
 
 # 3. User Input Loop
@@ -60,7 +70,11 @@ while true
         
         # Prepare Tensor
         inputTensor = new Tensor(1, 6)
-        inputTensor.aData[1] = normData
+        
+        # FIX 1: Use setVal instead of aData assignment
+        for i = 1 to 6
+            inputTensor.setVal(1, i, normData[i])
+        next
         
         # Predict
         prediction = model.forward(inputTensor)
@@ -69,9 +83,9 @@ while true
         nMaxIdx = 0
         nMaxVal = -1
         
-        # prediction is (1, 18)
+        # FIX 2: Use getVal instead of aData access
         for i = 1 to 18
-            val = prediction.aData[1][i]
+            val = prediction.getVal(1, i)
             if val > nMaxVal
                 nMaxVal = val
                 nMaxIdx = i

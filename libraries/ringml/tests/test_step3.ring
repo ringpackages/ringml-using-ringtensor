@@ -1,47 +1,51 @@
-load "../src/ringml.ring"
-decimals(8)
+load "ringml.ring"
 
-see "=== RingML Backpropagation Test ===" + nl
+decimals(4)
 
-# 1. Setup Data
-see "1. Input Data..." + nl
-input = new Tensor(1, 3)
-input.aData = [[0.5, 0.1, -0.2]]
-input.print()
+see "=== Step 3: Full Training Step (Backprop) ===" + nl
 
-# 2. Setup Layer
-see "2. Dense Layer & Forward..." + nl
-layer = new Dense(3, 2)
-output = layer.forward(input)
-output.print()
+# Data: Input [1.0], Target [0.0]
+input = new Tensor(1, 1)
+input.setVal(1, 1, 1.0)
 
-# 3. Simulate Gradient from next layer (Mock Error)
-see "3. Simulating Gradient from Loss..." + nl
-gradOutput = new Tensor(1, 2)
-gradOutput.fill(0.1) # Suppose we have small error
-gradOutput.print()
+target = new Tensor(1, 1)
+target.setVal(1, 1, 0.0)
 
-# 4. Backward Pass (Dense)
-see "4. Dense Backward..." + nl
-gradInput = layer.backward(gradOutput)
+# Model: 1 -> 1 (Linear)
+layer = new Dense(1, 1)
+layer.oWeights.setVal(1, 1, 0.5) # Initial weight 0.5
+layer.oBias.setVal(1, 1, 0.0)
 
-see "   Gradient w.r.t Input (Passed to prev layer):" + nl
-gradInput.print()
+optimizer = new SGD(0.1) # Learning Rate 0.1
+criterion = new MSELoss
 
-see "   Gradient w.r.t Weights (Stored in layer):" + nl
-layer.oGradWeights.print()
+see "Initial Weight: " + layer.oWeights.getVal(1, 1) + nl
 
-see "   Gradient w.r.t Bias (Stored in layer):" + nl
-layer.oGradBias.print()
+# --- Step ---
+# Forward
+pred = layer.forward(input) # 1.0 * 0.5 = 0.5
+loss = criterion.forward(pred, target) 
+# MSE = (0.5 - 0)^2 = 0.25
 
-# 5. Sigmoid Backward
-see "5. Sigmoid Backward..." + nl
-act = new Sigmoid
-# Forward first to cache output
-actOut = act.forward(output)
+see "Prediction: " + pred.getVal(1, 1) + nl
+see "Loss: " + loss + nl
+
 # Backward
-gradAct = act.backward(gradOutput) # Using same dummy grad
-see "   Sigmoid Gradient:" + nl
-gradAct.print()
+# Grad = 2 * (Pred - Target) / N = 2 * (0.5 - 0) / 1 = 1.0
+grad = criterion.backward(pred, target)
+layer.backward(grad)
 
-see "=== Backprop Test Completed ===" + nl
+# Update
+# Weight = Weight - (LR * Grad)
+# New = 0.5 - (0.1 * 1.0 * Input) ... roughly
+# Let's just check if it changes
+optimizer.update(layer)
+
+newWeight = layer.oWeights.getVal(1, 1)
+see "New Weight: " + newWeight + nl
+
+if newWeight < 0.5
+    see "   [PASS] Weight decreased towards target." + nl
+else
+    see "   [FAIL] Weight did not improve." + nl
+ok

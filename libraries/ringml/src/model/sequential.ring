@@ -27,69 +27,50 @@ class Sequential
         return aLayers
 
     # --- Mode Switching ---
-
     func train
-        for oLayer in aLayers
-            oLayer.train()
-        next
-
+        for oLayer in aLayers oLayer.train() next
     func evaluate
-        for oLayer in aLayers
-            oLayer.evaluate()
-        next
+        for oLayer in aLayers oLayer.evaluate() next
 
-    # --- Save & Load Functionality ---
-
+    # --- Save & Load ---
     func saveWeights cFileName
         see "Saving model to " + cFileName + "..." + nl
         
-        # 1. Collect all weights/biases into a single flat list
         aAllParams = []
-        
         for oLayer in aLayers
             if hasParams(oLayer)
-                # We save the raw list data (aData)
-                aAllParams + oLayer.oWeights.aData
-                aAllParams + oLayer.oBias.aData
+                # FIX: Convert Pointer-Tensor to List for saving
+                aAllParams + oLayer.oWeights.toList()
+                aAllParams + oLayer.oBias.toList()
             ok
         next
         
-        # 2. Serialize using High-Precision utility
         cData = SerializeData(aAllParams)
-        
         write(cFileName, cData)
         see "Done." + nl
 
     func loadWeights cFileName
         see "Loading model from " + cFileName + "..." + nl
+        if !fexists(cFileName) raise("Error: File not found") ok
         
-        if !fexists(cFileName)
-            raise("Error: File not found - " + cFileName)
-        ok
-        
-        # 1. Read and Deserialize
-        # eval() is used to parse the code string back into a list
         cCode = "return " + read(cFileName)
         aAllParams = eval(cCode)
         
-        # 2. Distribute params back to layers
         nIdx = 1
         for oLayer in aLayers
             if hasParams(oLayer)
-                if nIdx > len(aAllParams) 
-                    raise("Error: Model architecture mismatch (not enough params)")
-                ok
+                if nIdx > len(aAllParams) raise("Architecture Mismatch") ok
                 
-                # Restore Weights
-                oLayer.oWeights.aData = aAllParams[nIdx]
+                # FIX: Fill Pointer-Tensor from List
+                oLayer.oWeights.fromList(aAllParams[nIdx])
                 nIdx++
-                
-                # Restore Bias
-                oLayer.oBias.aData = aAllParams[nIdx]
+                oLayer.oBias.fromList(aAllParams[nIdx])
                 nIdx++
             ok
         next
         see "Done." + nl
+
+    
 
 	 # --- Model Summary (Colorful Version) ---
 

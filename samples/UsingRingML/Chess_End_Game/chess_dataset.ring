@@ -31,20 +31,22 @@ class ChessDataset from Dataset
         
         # Create small Tensor for Input (1, 6)
         oInTensor = new Tensor(1, 6)
-        oInTensor.aData[1] = normList
+        
+        # FIX: Use setVal instead of direct list access
+        for i = 1 to 6
+            oInTensor.setVal(1, i, normList[i])
+        next
 
         # 2. Process Target
         cLabel = row[7]
         nLabelIdx = getLabelIndex(cLabel)
         
-        # One-Hot Encoding
-        aOneHot = list(nClasses)
-        for k=1 to nClasses aOneHot[k]=0 next
-        aOneHot[nLabelIdx] = 1
-        
         # Create small Tensor for Target (1, 18)
+        # Note: Tensor is initialized with Zeros by default in C
         oTargetTensor = new Tensor(1, nClasses)
-        oTargetTensor.aData[1] = aOneHot
+        
+        # FIX: Set the One-Hot index directly
+        oTargetTensor.setVal(1, nLabelIdx, 1.0)
        
         # Return Pair [Input, Target]
         return [oInTensor, oTargetTensor]

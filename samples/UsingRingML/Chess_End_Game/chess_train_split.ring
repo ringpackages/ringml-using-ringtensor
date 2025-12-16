@@ -2,8 +2,12 @@
 # Description: Chess Training using built-in DataSplitter
 # Author: Azzeddine Remmal
 
+# File: examples/chess_train_split.ring
+# Description: Chess Training with Automated Split and Validation (Fixed)
+
 load "stdlib.ring"
-load "ringml.ring"
+load "../src/ringml.ring"
+load "../src/utils/visualizer.ring"
 load "chess_utils.ring"
 load "chess_dataset.ring"
 load "csvlib.ring"
@@ -20,17 +24,17 @@ see "Reading CSV..." + nl
 aRawsData = CSV2List( read(cFile) )
 if len(aRawsData) > 0 del(aRawsData, 1) ok 
 
-# 2. Use DataSplitter (The new feature)
+# 2. Use DataSplitter
 see "Splitting Data (80% Train, 20% Test)..." + nl
 
 splitter = new DataSplitter
-# split(Data, TestRatio=0.2, Shuffle=True)
-sets = splitter.splitData(aRawsData, 0.2, true) 
+# Ensure the method name matches your DataSplitter class (split vs splitData)
+sets = splitter.split(aRawsData, 0.2, true) 
 
 aTrainData = sets[1]
 aTestData  = sets[2]
 
-# Free memory of original list
+# Free memory
 aRawsData = [] 
 callgc()
 
@@ -79,8 +83,7 @@ for epoch = 1 to nEpochs
     # --- Training ---
     model.train() 
     trainLoss = 0
-    accuracy = 0
-
+    
     for b = 1 to trainLoader.nBatches
         batch = trainLoader.getBatch(b) 
         inputs  = batch[1]
@@ -95,7 +98,7 @@ for epoch = 1 to nEpochs
         
         for layer in model.getLayers() optimizer.update(layer) next
         
-        # --- UPDATE VISUALIZER (Every 5 batches to be smooth) ---
+        # --- UPDATE VISUALIZER ---
         if b % 5 = 0
             viz.update(epoch, b, loss, 0)
         ok
@@ -115,16 +118,24 @@ for epoch = 1 to nEpochs
         
         preds = model.forward(inputs)
         
-        # Calculate Accuracy logic...
+        # Calculate Accuracy logic (Fixed for C-Pointers)
         nBatchSize = preds.nRows
         for i = 1 to nBatchSize
             # ArgMax Pred
-            pMax = -1 pIdx = 0
-            for k=1 to nClasses if preds.aData[i][k] > pMax pMax=preds.aData[i][k] pIdx=k ok next
+            pMax = -1000 pIdx = 0
+            for k=1 to nClasses 
+                # FIX: Use getVal instead of aData[i][k]
+                val = preds.getVal(i, k)
+                if val > pMax pMax=val pIdx=k ok 
+            next
             
             # ArgMax Target
-            tMax = -1 tIdx = 0
-            for k=1 to nClasses if targets.aData[i][k] > tMax tMax=targets.aData[i][k] tIdx=k ok next
+            tMax = -1000 tIdx = 0
+            for k=1 to nClasses 
+                # FIX: Use getVal instead of aData[i][k]
+                val = targets.getVal(i, k)
+                if val > tMax tMax=val tIdx=k ok 
+            next
             
             if pIdx = tIdx correct++ ok
             total++

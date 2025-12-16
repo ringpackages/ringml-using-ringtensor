@@ -2,6 +2,7 @@
 # Description: Dataset loader for MNIST CSV format
 # Author: Azzeddine Remmal
 
+
 class MnistDataset from Dataset
     aRawData
     nRows
@@ -20,29 +21,27 @@ class MnistDataset from Dataset
         # --- 1. Process Label (First Column) ---
         nLabel = number(row[1]) # 0 to 9
         
-        # One-Hot Encoding
-        aOneHot = list(nClasses)
-        for k=1 to nClasses aOneHot[k]=0 next
-        
-        # Ring lists are 1-based, so digit 0 goes to index 1, digit 9 to index 10
-        aOneHot[nLabel + 1] = 1
-        
+        # Create Target Tensor (1, 10)
+        # It is initialized with zeros automatically by C extension
         oTargetTensor = new Tensor(1, nClasses)
-        oTargetTensor.aData[1] = aOneHot
+        
+        # Set the One-Hot index to 1.0 using setVal
+        # Ring lists are 1-based, so digit 0 is at index 1
+        oTargetTensor.setVal(1, nLabel + 1, 1.0)
 
         # --- 2. Process Image Pixels (Rest of Columns) ---
         nPixels = 784 # 28x28
-        aPixels = list(nPixels)
+        
+        oInTensor = new Tensor(1, nPixels)
         
         # CSV Row has 785 columns (1 label + 784 pixels)
-        # Pixel 1 is at index 2
+        # Pixel 1 starts at index 2 in the CSV row
         for i = 1 to nPixels
             # Normalize 0-255 to 0.0-1.0
             val = number(row[i+1]) / 255.0
-            aPixels[i] = val
+            
+            # Set value directly in Tensor using setVal
+            oInTensor.setVal(1, i, val)
         next
-        
-        oInTensor = new Tensor(1, nPixels)
-        oInTensor.aData[1] = aPixels
 
         return [oInTensor, oTargetTensor]

@@ -14,11 +14,19 @@ class SGD
         ok
         
         if variableExists(oLayer, "oWeights")
-            tensor_update_sgd(oLayer.oWeights.aData, oLayer.oGradWeights.aData, nLearningRate)
+            tensor_update_sgd(
+                oLayer.oWeights.pData, 
+                oLayer.oGradWeights.pData, 
+                nLearningRate
+            )
         ok
 
         if variableExists(oLayer, "oBias")
-            tensor_update_sgd(oLayer.oBias.aData, oLayer.oGradBias.aData, nLearningRate)
+            tensor_update_sgd(
+                oLayer.oBias.pData, 
+                oLayer.oGradBias.pData, 
+                nLearningRate
+            )
         ok
         
     func variableExists oObj, cVar
@@ -27,4 +35,7 @@ class SGD
             if lower(cAttr) = lower(cVar) return true ok
         next
         return false
+    
+    func hasAttribute oObj, cName
+        return variableExists(oObj, cName)
     

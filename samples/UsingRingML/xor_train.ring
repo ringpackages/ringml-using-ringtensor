@@ -42,7 +42,7 @@ model.add(new Sigmoid)
 # 3. Setup Loss and Optimizer
 criterion = new MSELoss
 # Use higher learning rate for XOR with Sigmoid to speed up convergence
-optimizer = new SGD(0.5) 
+optimizer = new SGD(0.2) 
 
 # 4. Training Loop
 nEpochs = 5000

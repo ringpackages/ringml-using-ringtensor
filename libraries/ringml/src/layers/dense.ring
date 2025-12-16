@@ -3,6 +3,7 @@
 # Author: Azzeddine Remmal
 
 
+
 class Dense from Layer
     oWeights        
     oBias           
@@ -11,6 +12,11 @@ class Dense from Layer
     oGradWeights    
     oGradBias       
 
+    # Cache for optimization (Reuse pointers)
+    oOutputCache            = NULL
+    oInputTransposedCache   = NULL
+    oWeightsTransposedCache = NULL
+
     nInputSize
     nNeurons
 
@@ -18,38 +24,24 @@ class Dense from Layer
         nInputSize = nIn
         nNeurons   = nOut
         
-        # DEBUG INFO
-        //see ">> Init Dense (" + nInputSize + ", " + nNeurons + ")... " 
-        
         # 1. Weights Init
         oWeights = new Tensor(nInputSize, nNeurons)
         
-        # Manual Random Init (-1 to 1)
-        # We assume Tensor creates lists of INT 0s. We must overwrite ALL of them.
-        
-        countFilled = 0
+        # Manual Random Init (-1 to 1) using setVal
         for r = 1 to nInputSize
             for c = 1 to nNeurons
-                val = (random(4000) / 10000.0) - 0.2
-                oWeights.aData[r][c] = val
-                countFilled++
+                val = (random(2000) / 1000.0) - 1.0
+                oWeights.setVal(r, c, val)
             next
         next
-        
-        # DEBUG CHECK
-        /*if countFilled != (nInputSize * nNeurons)
-           see "ERROR: Only filled " + countFilled + " items!" + nl
-        else
-           see "OK (Filled " + countFilled + ")" + nl
-        ok*/
 
         # 2. Bias Init (Small Randoms)
         oBias = new Tensor(1, nNeurons)
-        oBias.zeros()
-        /*for c = 1 to nNeurons
+        for c = 1 to nNeurons
              val = (random(100) / 10000.0) 
-             oBias.aData[1][c] = val
-        next*/
+             if val = 0 val = 0.0001 ok
+             oBias.setVal(1, c, val)
+        next
         
         # 3. Gradients Init
         oGradWeights = new Tensor(nInputSize, nNeurons)
@@ -59,27 +51,50 @@ class Dense from Layer
         
     func forward oInputTensor
         oInput = oInputTensor
+        
+        # 1. MatMul (C-Level Speed)
+        # Result is a new Tensor (managed by C)
         oOutput = oInput.matmul(oWeights)
         
-        biasList = oBias.aData[1]
+        # 2. Add Bias (Broadcasting)
+        # Since we don't have "Broadcast Add" in C yet, we use manual loop
+        # using getVal/setVal. It is O(N), so it is fast enough.
+        
         for r = 1 to oOutput.nRows
-            row = oOutput.aData[r]
             for c = 1 to oOutput.nCols
-                row[c] += biasList[c]
+                # val = old + bias
+                val = oOutput.getVal(r, c) + oBias.getVal(1, c)
+                oOutput.setVal(r, c, val)
             next
         next
         
         return oOutput
 
     func backward oGradOutput
-        oInputCopy = oInput.copy()
-        oInputCopy.transpose()
-        oGradWeights = oInputCopy.matmul(oGradOutput)
+        # 1. Gradients for Weights
+        # dW = Input^T * GradOutput
         
+        if ISNULL(oInputTransposedCache) or oInputTransposedCache.nRows != oInput.nCols
+             oInputTransposedCache = oInput.transpose()
+        else
+             # Update existing cache (Optimization needed in Tensor later)
+             # For now, just create new transpose
+             oInputTransposedCache = oInput.transpose()
+        ok
+        
+        # We calculate dW directly into oGradWeights
+        # Note: Tensor.matmul currently returns NEW tensor.
+        # Ideally, we should pass oGradWeights to matmul to avoid allocation.
+        # But to keep API simple, we assign the result.
+        oGradWeights = oInputTransposedCache.matmul(oGradOutput)
+        
+        # 2. Gradients for Bias
+        # dB = Sum(GradOutput, Axis=0)
         oGradBias = oGradOutput.sum(0) 
         
-        oWeightsCopy = oWeights.copy()
-        oWeightsCopy.transpose()
-        dInput = oGradOutput.matmul(oWeightsCopy)
+        # 3. Gradient for Input
+        # dInput = GradOutput * Weights^T
+        oWeightsTransposedCache = oWeights.transpose()
+        dInput = oGradOutput.matmul(oWeightsTransposedCache)
         
         return dInput

@@ -1,9 +1,13 @@
 # File: examples/chess_train_lite.ring
 # Description: FAST training for Chess (Lite Version for CPU i3)
 # Author: Azzeddine Remmal
+# File: examples/chess_train_lite.ring
+# Description: FAST training for Chess (Lite Version for CPU i3) - Fixed
+# Author: Azzeddine Remmal & Code Gear-1
 
 load "stdlib.ring"
-load "ringml.ring"
+load "../src/ringml.ring"
+load "../src/utils/visualizer.ring"
 load "chess_utils.ring"
 load "chess_dataset.ring"
 load "csvlib.ring"
@@ -37,7 +41,8 @@ if len(aRawsData) > nLiteSize
     
     # Pick first 5000
     for i = 1 to nLiteSize
-        aLiteData + aRawsData[i]
+        # FIX: Use add() instead of (+) to preserve row structure
+        add(aLiteData, aRawsData[i])
     next
     aRawsData = aLiteData
     see "Reduced dataset to " + nLiteSize + " samples for speed." + nl
@@ -45,6 +50,7 @@ ok
 
 # 2. Split (80% Train, 20% Test)
 splitter = new DataSplitter
+# Ensure method name matches your DataSplitter class (split vs splitData)
 sets = splitter.splitData(aRawsData, 0.2, true) 
 aTrain = sets[1]
 aTest  = sets[2]
@@ -105,7 +111,9 @@ for epoch = 1 to nEpochs
         for layer in model.getLayers() optimizer.update(layer) next
         
         # Update Visualizer
-        viz.update(epoch, b, loss, 0)
+        if b % 5 = 0
+            viz.update(epoch, b, loss, 0)
+        ok
     next
     
     avgTrainLoss = epochLoss / trainLoader.nBatches
@@ -124,11 +132,19 @@ for epoch = 1 to nEpochs
         nBatchSize = preds.nRows
         for i = 1 to nBatchSize
             # Simple ArgMax
-            pMax = -1 pIdx=0
-            for k=1 to nClasses if preds.aData[i][k] > pMax pMax=preds.aData[i][k] pIdx=k ok next
+            pMax = -1000 pIdx=0
+            for k=1 to nClasses 
+                # FIX: Use getVal() for C-Pointer based Tensors
+                val = preds.getVal(i, k)
+                if val > pMax pMax=val pIdx=k ok 
+            next
             
-            tMax = -1 tIdx=0
-            for k=1 to nClasses if targets.aData[i][k] > tMax tMax=targets.aData[i][k] tIdx=k ok next
+            tMax = -1000 tIdx=0
+            for k=1 to nClasses 
+                # FIX: Use getVal() for C-Pointer based Tensors
+                val = targets.getVal(i, k)
+                if val > tMax tMax=val tIdx=k ok 
+            next
             
             if pIdx = tIdx correct++ ok
             total++

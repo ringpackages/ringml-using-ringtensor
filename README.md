@@ -1,8 +1,8 @@
 # 🧠 RingML: Deep Learning Library for Ring
 
-RingML is a high-performance, object-oriented Deep Learning framework built for the **Ring programming language**. It is powered by **RingTensor**, a custom C-extension designed specifically to provide fast, double-precision matrix operations and fused optimizer kernels.
+RingML is a high-performance, object-oriented Deep Learning framework built for the Ring programming language. It is powered by **RingTensor**, a custom C-extension designed specifically to provide fast, double-precision matrix operations and fused optimizer kernels.
 
-The library offers a **PyTorch-like API**, adhering to *Jacob's Law* by providing a familiar and intuitive interface for building Neural Networks.
+The library offers a PyTorch-like API, adhering to **Jacob's Law** by providing a familiar and intuitive interface for building Neural Networks.
 
 **Current Version:** 1.0.0 (Stable - Powered by RingTensor)
 
@@ -23,7 +23,7 @@ ringpm install ringml-using-ringtensor from Azzeddine2017
 - **Architecture:** Modular OOP (Tensor, Layers, Model, Optim, Data).
 - **Math Backend:** Full C Acceleration.
 
-Unlike previous versions that used slow loops for stability, **RingML** now uses the **RingTensor** C-extension for all critical operations (MatMul, Transpose, Element-wise Math, Activations).
+Unlike previous versions that used slow loops for stability, RingML now uses the **RingTensor C-extension** for all critical operations (MatMul, Transpose, Element-wise Math, Activations).
 
 - **Fused Kernels:** Optimizers (Adam, SGD) calculate updates inside C in a single pass for maximum speed.
 - **Precision:** Full Double Precision (64-bit float) guaranteed across the pipeline.
@@ -42,38 +42,47 @@ Unlike previous versions that used slow loops for stability, **RingML** now uses
 
 ### 3. Model & Optimization (`src/model/`, `src/optim/`)
 - **Sequential:** Stack layers linearly. Includes `model.summary()` to visualize architecture.
-- **Optimizers:**
-  - **SGD** (Stochastic Gradient Descent).
-  - **Adam** (Adaptive Moment Estimation) - Implemented via Fused Kernel in C.
-- **Loss Functions:** `MSELoss` (Regression), `CrossEntropyLoss` (Classification).
+- **Optimizers:** SGD, Adam (Adaptive Moment Estimation).
+- **Loss Functions:** MSELoss (Regression), CrossEntropyLoss (Classification).
 - **Modes:** Support for `train()` and `evaluate()` modes.
 
 ### 4. Data Pipeline (`src/data/`)
-- **DataSplitter:** Utility to shuffle and split raw data into Training/Testing sets.
-- **DataLoader:** Efficient Mini-Batch processing to handle large datasets without memory overflow.
-- **Lazy Loading:** Support for custom Datasets.
+- **UniversalDataset:** An all-in-one class that automates file loading (CSV/JSON), cleaning, shuffling, splitting, and memory management.
+- **DataSplitter:** Utility to shuffle and split raw data manually.
+- **DataLoader:** Efficient Mini-Batch processing.
 
 ## ⚡ Quick Start Guide
 
-### 1. Data Preparation
-Use `DataSplitter` to handle raw CSV data and `DataLoader` for batching.
+### 1. Data Preparation (The Professional Way)
+Instead of handling raw lists manually, use `UniversalDataset` to handle loading, cleaning, shuffling, and splitting in one go.
 
 ```ring
-load "ringml.ring" # Or specific path inside the package
+load "ringml.ring" 
 load "stdlib.ring"
 
-# 1. Load Data
-aRawData = [ [0,0,0], [0,1,1], [1,0,1], [1,1,0] ] # Example XOR data
+# Define how to process a single row
+class MyDataset from UniversalDataset
+    func rowToTensor row
+        # Convert row list to Tensors (Input, Target)
+        oIn = new Tensor(1, 2)
+        oIn.setVal(1, 1, number(row[1])) 
+        oIn.setVal(1, 2, number(row[2])) 
+        
+        oOut = new Tensor(1, 1)
+        oOut.setVal(1, 1, number(row[3]))
+        
+        return [oIn, oOut]
 
-# 2. Split (80% Train, 20% Test) with Shuffle
-splitter = new DataSplitter
-sets = splitter.splitData(aRawData, 0.2, true) 
-trainData = sets[1]
-testData  = sets[2]
+# Load and Prepare
+data = new MyDataset("data.csv")
+data.setHeader(true)        # Skip first row
+data.setShuffle(true)       # Randomize
+data.setSplit(0.2)          # 20% for Testing
+data.loadData()             # Execute
 
-# 3. Create Loader (Batch Size = 32)
-dataset = new TensorDataset(trainData) 
-loader  = new DataLoader(dataset, 32)
+# Create Loaders
+trainLoader = new DataLoader(data.getTrainDataset(), 32)
+testLoader  = new DataLoader(data.getTestDataset(), 32)
 ```
 
 ### 2. Building the Model
@@ -95,23 +104,7 @@ model.add(new Softmax)
 model.summary()
 ```
 
-### 3. Advanced: Freezing Layers (Transfer Learning)
-You can freeze specific layers to prevent them from updating during training.
-
-```ring
-model = new Sequential
-l1 = new Dense(6, 32)
-l1.freeze()  # <--- This layer's weights will NOT change
-model.add(l1)
-model.add(new Tanh)
-model.add(new Dense(32, 1))
-model.add(new Softmax)
-
-model.summary() 
-# You will see "Non-trainable params" count increase.
-```
-
-### 4. Training with Adam
+### 3. Training with Adam
 The training loop handles Forward pass, Backward pass, and Optimization.
 
 ```ring
@@ -124,8 +117,8 @@ model.train()
 
 for epoch = 1 to nEpochs
     epochLoss = 0
-    for b = 1 to loader.nBatches
-        batch = loader.getBatch(b)
+    for b = 1 to trainLoader.nBatches
+        batch = trainLoader.getBatch(b)
         inputs = batch[1] 
         targets = batch[2]
         
@@ -140,11 +133,11 @@ for epoch = 1 to nEpochs
         
         epochLoss += loss
     next
-    see "Epoch " + epoch + " Loss: " + (epochLoss / loader.nBatches) + nl
+    see "Epoch " + epoch + " Loss: " + (epochLoss / trainLoader.nBatches) + nl
 next
 ```
 
-### 5. Saving & Loading
+### 4. Saving & Loading
 Switch to evaluation mode to disable Dropout, then save.
 
 ```ring
@@ -160,7 +153,7 @@ model2.loadWeights("mymodel.rdata")
 
 ## 🧪 Included Examples
 
-- **xor_train.ring:** Binary Classification (Hello World).
+- **xor_train.ring:** Binary Classification.
 - **Chess_End_Game/:** A complete real-world project classifying chess game results (18 classes) from a CSV dataset.
 - **mnist_train.ring:** Computer Vision example for digit recognition.
 

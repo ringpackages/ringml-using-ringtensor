@@ -2,15 +2,19 @@
 # Description: Save/Load Model Demo
 # Author: Azzeddine Remmal
 
-load "ringml.ring"
+load "stdlib.ring"
 
 decimals(4)
 
 see "=== RingML Save/Load Model Demo ===" + nl
 
-# 1. Prepare Data (XOR)
-inputs  = new Tensor(4, 2) { aData = [[0,0], [0,1], [1,0], [1,1]] }
-targets = new Tensor(4, 1) { aData = [[0],   [1],   [1],   [0]] }
+# 1. Prepare Data (XOR) - (Updated for C-Pointers)
+# We use a helper function 'listToTensor' to convert lists to Tensor
+aIn  = [[0,0], [0,1], [1,0], [1,1]]
+aOut = [[0],   [1],   [1],   [0]]
+
+inputs  = listToTensor(aIn)
+targets = listToTensor(aOut)
 
 # 2. Train Model A
 see "--> Training Model A..." + nl
@@ -23,13 +27,15 @@ modelA.add(new Sigmoid)
 optimizer = new SGD(0.5)
 criterion = new MSELoss
 
-for epoch = 1 to 200
+for epoch = 1 to 2000
     preds = modelA.forward(inputs)
     grad  = criterion.backward(preds, targets)
     modelA.backward(grad)
     for l in modelA.getLayers() optimizer.update(l) next
-    if epoch % 1000 = 0 see "." ok
+    
+    if epoch % 200 = 0 see "." ok
 next
+see nl
 
 see "Model A Predictions (Trained):" + nl
 predA = modelA.forward(inputs)
@@ -60,10 +66,27 @@ predB.print()
 
 # 6. Verification
 see "--> Verification: "
-# Simple check of first element
-diff = fabs(predA.aData[1][1] - predB.aData[1][1])
+
+# FIX: Use getVal() instead of aData[][]
+valA = predA.getVal(1, 1)
+valB = predB.getVal(1, 1)
+
+diff = fabs(valA - valB)
+
 if diff < 0.0001
     see "SUCCESS (Models Match)" + nl
 else
     see "FAILURE (Mismatch)" + nl
 ok
+
+# --- Helper Function ---
+func listToTensor aList
+    nRows = len(aList)
+    nCols = len(aList[1])
+    oTen = new Tensor(nRows, nCols)
+    for r = 1 to nRows
+        for c = 1 to nCols
+            oTen.setVal(r, c, aList[r][c])
+        next
+    next
+    return oTen
