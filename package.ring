@@ -5,11 +5,11 @@ aPackageInfo = [
 	:developer = "Azzeddine Remmal",
 	:email = "azzeddine.remmal@gmail.com",
 	:license = "MIT License",
-	:version = "1.0.0",
+	:version = "1.1.0",
 	:ringversion = "1.24",
 	:versions = 	[
 		[
-			:version = "1.0.0",
+			:version = "1.1.0",
 			:branch = "master"
 		]
 	],
@@ -20,13 +20,18 @@ aPackageInfo = [
 			:providerusername = ""
 		],
 		[
-			:name = "ringconsolecolors",
+			:name = "ringtensor",
+			:version = "1.1.0",
+			:providerusername = ""
+		],
+		[
+			:name = "csvlib",
 			:version = "1.0.7",
 			:providerusername = ""
 		],
 		[
-			:name = "ringtensor",
-			:version = "1.0.0",
+			:name = "jsonlib",
+			:version = "1.0.4",
 			:providerusername = ""
 		]
 	],
@@ -37,13 +42,16 @@ aPackageInfo = [
 	],
 	:ringfolderfiles = 	[
 		"bin/load/ringml.ring",
+		"libraries/ringml/project_documents/Performance Optimization Report.txt",
 		"libraries/ringml/project_documents/RingML/FastPro_Fix_Roadmap.md",
 		"libraries/ringml/project_documents/RingML/FastPro_Technical_Report.md",
 		"libraries/ringml/project_documents/RingML/README.md",
 		"libraries/ringml/project_documents/RingML/uml/class_diagram.md",
+		"libraries/ringml/README.md",
 		"libraries/ringml/src/core/tensor.ring",
 		"libraries/ringml/src/data/dataset.ring",
 		"libraries/ringml/src/data/datasplitter.ring",
+		"libraries/ringml/src/data/universaldataset.ring",
 		"libraries/ringml/src/layers/activation.ring",
 		"libraries/ringml/src/layers/dense.ring",
 		"libraries/ringml/src/layers/dropout.ring",
@@ -56,6 +64,7 @@ aPackageInfo = [
 		"libraries/ringml/src/optim/sgd.ring",
 		"libraries/ringml/src/ringml.ring",
 		"libraries/ringml/src/utils/serializer.ring",
+		"libraries/ringml/src/utils/Styler.ring",
 		"libraries/ringml/src/utils/visualizer.ring",
 		"libraries/ringml/tests/test_dims.ring",
 		"libraries/ringml/tests/test_init.ring",
@@ -65,30 +74,41 @@ aPackageInfo = [
 		"libraries/ringml/tests/test_step3.ring",
 		"libraries/ringml/tests/test_step4.ring",
 		"libraries/ringml/tests/test_sub.ring",
+		"samples/UsingRingML/benchmark_bottleneck.ring",
+		"samples/UsingRingML/Chess_End_Game/chess_ai_tool.ring",
 		"samples/UsingRingML/Chess_End_Game/chess_app.ring",
 		"samples/UsingRingML/Chess_End_Game/chess_dataset.ring",
 		"samples/UsingRingML/Chess_End_Game/chess_final_model.ring",
-		"samples/UsingRingML/Chess_End_Game/chess_train_adam.ring",
-		"samples/UsingRingML/Chess_End_Game/chess_train_batch.ring",
-		"samples/UsingRingML/Chess_End_Game/chess_train_fast.ring",
 		"samples/UsingRingML/Chess_End_Game/chess_train_lite.ring",
 		"samples/UsingRingML/Chess_End_Game/chess_train_split.ring",
+		"samples/UsingRingML/Chess_End_Game/chess_train_universal.ring",
 		"samples/UsingRingML/Chess_End_Game/chess_utils.ring",
 		"samples/UsingRingML/Chess_End_Game/data/chess.csv",
+		"samples/UsingRingML/Chess_End_Game/imgs/BKing.png",
+		"samples/UsingRingML/Chess_End_Game/imgs/INSTRUCTIONS.md",
+		"samples/UsingRingML/Chess_End_Game/imgs/WKing.png",
+		"samples/UsingRingML/Chess_End_Game/imgs/WRook.png",
+		"samples/UsingRingML/Chess_End_Game/model/chess_final.rdata",
 		"samples/UsingRingML/Chess_End_Game/model/chess_model_lite.rdata",
+		"samples/UsingRingML/Chess_End_Game/model/chess_universal.rdata",
+		"samples/UsingRingML/Chess_End_Game/User Guidt.txt",
 		"samples/UsingRingML/classify_demo.ring",
-		"samples/UsingRingML/classify_demo2.ring",
 		"samples/UsingRingML/fast_viz_demo.ring",
 		"samples/UsingRingML/loader_demo.ring",
 		"samples/UsingRingML/mnist/data/mnist_test.csv",
-		"samples/UsingRingML/mnist/model/mnist_model.rdata",
+		"samples/UsingRingML/mnist/data/mnist_test_lite.csv",
 		"samples/UsingRingML/mnist/mnist_app.ring",
 		"samples/UsingRingML/mnist/mnist_dataset.ring",
-		"samples/UsingRingML/mnist/mnist_train.ring",
 		"samples/UsingRingML/mnist/mnist_train_split.ring",
+		"samples/UsingRingML/mnist/mnist_train_universal.ring",
+		"samples/UsingRingML/mnist/model/mnist_model.rdata",
+		"samples/UsingRingML/mnist/model/mnist_split_model.rdata",
+		"samples/UsingRingML/mnist/model/mnist_universal.rdata",
 		"samples/UsingRingML/README.md",
 		"samples/UsingRingML/save_load_demo.ring",
-		"samples/UsingRingML/xor_train.ring"
+		"samples/UsingRingML/Visual_test_model.rdata",
+		"samples/UsingRingML/xor_train.ring",
+		"samples/UsingRingML/xor_weights.rdata"
 	],
 	:windowsfiles = 	[
 

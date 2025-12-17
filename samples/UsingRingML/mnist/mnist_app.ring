@@ -2,15 +2,10 @@
 # Description: Interactive MNIST Predictor with ASCII Art
 # Author: Azzeddine Remmal
 
-# File: examples/mnist_app.ring
-# Description: Interactive MNIST Predictor with ASCII Art (Fixed for C-Pointers)
+load "ringml.ring"
 
-load "stdlib.ring"
-load "../src/ringml.ring" # Correct path to source
-load "mnist_dataset.ring"
-load "csvlib.ring"
 
-decimals(3)
+decimals(8)
 
 see "=== RingML MNIST Digit Predictor ===" + nl
 

@@ -2,15 +2,10 @@
 # Description: Chess Training using built-in DataSplitter
 # Author: Azzeddine Remmal
 
-# File: examples/chess_train_split.ring
-# Description: Chess Training with Automated Split and Validation (Fixed)
-
-load "stdlib.ring"
-load "../src/ringml.ring"
-load "../src/utils/visualizer.ring"
+load "ringml.ring"
 load "chess_utils.ring"
 load "chess_dataset.ring"
-load "csvlib.ring"
+
 
 decimals(5)
 
@@ -42,7 +37,7 @@ see "Training Set: " + len(aTrainData) + " samples." + nl
 see "Testing Set:  " + len(aTestData)  + " samples." + nl
 
 # 3. Setup Datasets & Loaders
-batch_size = 512 
+batch_size = 128 
 
 trainDataset = new ChessDataset(aTrainData)
 testDataset  = new ChessDataset(aTestData)
@@ -54,23 +49,23 @@ testLoader   = new DataLoader(testDataset, batch_size)
 nClasses = 18
 model = new Sequential
 
-model.add(new Dense(6, 128))   
+model.add(new Dense(6, 64))   
 model.add(new Tanh)        
 model.add(new Dropout(0.2))
 
-model.add(new Dense(128, 64))  
+model.add(new Dense(64, 32))  
 model.add(new Tanh)
 model.add(new Dropout(0.2))
 
-model.add(new Dense(64, nClasses)) 
+model.add(new Dense(32, nClasses)) 
 model.add(new Softmax)
 
 model.summary()
 
 # 5. Training Setup
 criterion = new CrossEntropyLoss
-optimizer = new Adam(0.005) 
-nEpochs   = 20
+optimizer = new Adam(0.01) 
+nEpochs   = 10
 
 # --- SETUP VISUALIZER ---
 viz = new TrainingVisualizer(nEpochs, trainLoader.nBatches)

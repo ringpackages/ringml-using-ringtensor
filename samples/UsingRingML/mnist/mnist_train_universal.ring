@@ -1,58 +1,17 @@
-# File: examples/mnist_train.ring
-# Description: Training MLP on MNIST Digits
-# Author: Azzeddine Remmal
-
 # File: examples/mnist_train_universal.ring
 # Description: MNIST Training using UniversalDataset & DataSplitter
-# Author: Azzeddine Remmal & Code Gear-1
+# Author: Azzeddine Remmal 
 
-load "stdlib.ring"
-load "../src/ringml.ring"             # Core Library
-load "../src/utils/visualizer.ring"   # Visualizer
-load "mnist_dataset.ring"             # (Optional if logic is inline, but we define handler here)
-load "csvlib.ring"
+load "ringml.ring"             
+load "mnist_dataset.ring"
 
-decimals(5)
+decimals(8)
 
 see "=== RingML MNIST Digit Recognition (Universal Loader) ===" + nl
 
-# ============================================================
-# 1. Define Custom Dataset Logic
-# ============================================================
-class MnistDataHandler from UniversalDataset
-    
-    nFeatures = 784 # 28x28 pixels
-    nClasses  = 10  # Digits 0-9
-
-    # Override: Define how to convert a single CSV row to Tensors
-    func rowToTensor row
-        # row structure: [label, pixel1, pixel2, ... pixel784]
-        
-        # A. Process Target Label (First Column)
-        # Convert string to number
-        nLabel = number(row[1]) 
-        
-        # Create Target Tensor (1, 10) - One Hot Encoding
-        # Ring lists are 1-based, so digit 0 maps to index 1
-        oOut = new Tensor(1, nClasses)
-        oOut.setVal(1, nLabel + 1, 1.0)
-
-        # B. Process Input Features (Remaining Columns)
-        # Create Input Tensor (1, 784)
-        oIn = new Tensor(1, nFeatures)
-        
-        # Pixels start at index 2
-        for i = 1 to nFeatures
-            # Normalize 0-255 -> 0.0-1.0
-            # row index is i+1 because index 1 is label
-            nVal = number(row[i+1]) / 255.0
-            oIn.setVal(1, i, nVal)
-        next
-
-        return [oIn, oOut]
 
 # ============================================================
-# 2. Main Execution
+#                    Main Execution
 # ============================================================
 
 # A. Initialize & Configure Data
@@ -93,7 +52,7 @@ model.summary()
 # 4. Training Setup
 criterion = new CrossEntropyLoss
 optimizer = new Adam(0.005) # Adam
-nEpochs   = 5
+nEpochs   = 50
 
 # --- SETUP VISUALIZER ---
 viz = new TrainingVisualizer(nEpochs, trainLoader.nBatches)
@@ -143,8 +102,8 @@ for epoch = 1 to nEpochs
         preds = model.forward(inputs)
         
         # Accuracy Logic
-        nRows = preds.nRows
-        for r=1 to nRows
+        nBatchSize = preds.nRows
+        for r=1 to nBatchSize
             # ArgMax Pred
             pMax = -1000 pIdx = 0
             for k=1 to 10
@@ -175,3 +134,38 @@ see "Total Time: " + ((clock()-tTotal)/clockspersecond()) + "s" + nl
 # 5. Save
 model.saveWeights("model/mnist_universal.rdata")
 see "Model Saved." + nl
+
+# ============================================================
+#             Define Custom Dataset Logic
+# ============================================================
+class MnistDataHandler from UniversalDataset
+    
+    nFeatures = 784 # 28x28 pixels
+    nClasses  = 10  # Digits 0-9
+
+    # Override: Define how to convert a single CSV row to Tensors
+    func rowToTensor row
+        # row structure: [label, pixel1, pixel2, ... pixel784]
+        
+        # A. Process Target Label (First Column)
+        # Convert string to number
+        nLabel = number(row[1]) 
+        
+        # Create Target Tensor (1, 10) - One Hot Encoding
+        # Ring lists are 1-based, so digit 0 maps to index 1
+        oOut = new Tensor(1, nClasses)
+        oOut.setVal(1, nLabel + 1, 1.0)
+
+        # B. Process Input Features (Remaining Columns)
+        # Create Input Tensor (1, 784)
+        oIn = new Tensor(1, nFeatures)
+        
+        # Pixels start at index 2
+        for i = 1 to nFeatures
+            # Normalize 0-255 -> 0.0-1.0
+            # row index is i+1 because index 1 is label
+            nVal = number(row[i+1]) / 255.0
+            oIn.setVal(1, i, nVal)
+        next
+
+        return [oIn, oOut]

@@ -2,11 +2,6 @@
 # Description: Professional Data Manager (Load, Clean, Shuffle, Split)
 # Author: Code Gear-1
 
-load "stdlib.ring"
-load "dataset.ring"
-load "datasplitter.ring"
-load "csvlib.ring"
-load "jsonlib.ring"
 
 class UniversalDataset
     # Data Storage
@@ -84,7 +79,7 @@ class UniversalDataset
         see "Processing Split (" + ((1-nTestRatio)*100) + "/" + (nTestRatio*100) + ")..." + nl
         
         splitter = new DataSplitter
-        sets = splitter.split(aRawData, nTestRatio, bShuffle)
+        sets = splitter.splitData(aRawData, nTestRatio, bShuffle)
         
         aTrainData = sets[1]
         aTestData  = sets[2]

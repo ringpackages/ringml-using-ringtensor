@@ -11,12 +11,10 @@
 # File: examples/chess_final_model.ring
 # Description: Training the Final Chess Model (All Data)
 
-load "stdlib.ring"
-load "../src/ringml.ring"             # تصحيح المسار
-load "../src/utils/visualizer.ring"   # ضروري للعرض
+
+load "ringml.ring"
 load "chess_utils.ring"
 load "chess_dataset.ring"
-load "csvlib.ring"
 
 decimals(5)
 
@@ -39,10 +37,10 @@ ok
 # 2. Setup Dataset & Loader
 # Note: We use ALL data for the final model (No split)
 dataset = new ChessDataset(aRawsData)
-batch_size = 256 
+batch_size = 128 
 loader = new DataLoader(dataset, batch_size)
 
-see "Dataset: " + dataset.len() + " samples." + nl
+see "Dataset: " + dataset.length() + " samples." + nl
 see "Batches: " + loader.nBatches + " per epoch." + nl
 
 # 3. Build Architecture
@@ -69,8 +67,8 @@ model.summary()
 
 # 5. Training Setup
 criterion = new CrossEntropyLoss
-optimizer = new Adam(0.005) 
-nEpochs   = 10 
+optimizer = new Adam(0.01) 
+nEpochs   = 100
 
 # --- SETUP VISUALIZER ---
 viz = new TrainingVisualizer(nEpochs, loader.nBatches)
@@ -125,5 +123,5 @@ model.evaluate()
 
 # 7. Save Model
 # Ensure 'model' folder exists or save to root
-model.saveWeights("chess_final.rdata") 
+model.saveWeights("model/chess_final.rdata") 
 see "Model Saved Successfully." + nl

@@ -2,7 +2,8 @@
 # Description: Save/Load Model Demo
 # Author: Azzeddine Remmal
 
-load "stdlib.ring"
+load "ringml.ring"
+
 
 decimals(4)
 

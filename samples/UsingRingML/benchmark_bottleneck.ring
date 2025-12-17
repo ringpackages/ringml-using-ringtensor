@@ -1,7 +1,5 @@
-# File: examples/benchmark_bottleneck.ring
 # Description: Bottleneck Detector (Fixed for C-Pointers)
 
-load "stdlib.ring"
 load "ringml.ring" 
 
 decimals(4)
@@ -38,6 +36,8 @@ model.add(new Dense(nFeatures, nHidden))
 model.add(new Tanh)
 model.add(new Dense(nHidden, nClasses))  
 model.add(new Softmax)
+
+model.summary()
 
 criterion = new CrossEntropyLoss
 optimizer = new Adam(0.001)

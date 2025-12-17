@@ -79,9 +79,9 @@ class Sequential
         # If not, this might throw error, but we assume environment is set.
         
         see nl
-        cc_print(CC_FG_CYAN,  "_________________________________________________________________" + nl)
-        cc_print(CC_FG_WHITE, pad("Layer (Type)", 29) + pad("Output Shape", 26) + "Param #" + nl)
-        cc_print(CC_FG_CYAN,  "=================================================================" + nl)
+        ? oStyl.cyan(:bold,"_________________________________________________________________")
+        ? oStyl.white(:bold,pad("Layer (Type)", 29) + pad("Output Shape", 26) + "Param #" )
+        ? oStyl.cyan(:bold,"=================================================================")
         
         nTotalParams = 0
         nTrainableParams = 0
@@ -120,35 +120,35 @@ class Sequential
             cCol3 = "" + nParams
             
             # Name in Yellow
-            cc_print(CC_FG_YELLOW, cCol1)
+            oStyl.yellow(:NONE,cCol1)
             
             # Shape in Cyan
-            cc_print(CC_FG_CYAN,   cCol2)
+            oStyl.cyan(:NONE,cCol2)
             
             # Params in Green
-            cc_print(CC_FG_GREEN,  cCol3 + nl)
+            ? oStyl.green(:NONE,cCol3 ) 
             
             # Separator in Dark Gray (Subtle)
-            cc_print(CC_FG_DARK_GRAY, "_________________________________________________________________" + nl)
+            ? oStyl.cyan(:NONE,"_________________________________________________________________")
         next
         
         # --- Footer ---
         see nl
-        cc_print(CC_FG_WHITE, "Total params:         ")
-        cc_print(CC_FG_CYAN,  "" + nTotalParams + nl)
+        oStyl.white(:NONE,"Total params:         ")
+        ? oStyl.cyan(:NONE,"" + nTotalParams )
         
-        cc_print(CC_FG_WHITE, "Trainable params:     ")
-        cc_print(CC_FG_GREEN, "" + nTrainableParams + nl)
+        oStyl.white(:NONE,"Trainable params:     ")
+        ? oStyl.green(:NONE,"" + nTrainableParams )
         
-        cc_print(CC_FG_WHITE, "Non-trainable params: ")
+        oStyl.white(:NONE,"Non-trainable params: ")
         
         if nNonTrainableParams > 0
-            cc_print(CC_FG_RED, "" + nNonTrainableParams + nl)
+            ? oStyl.red(:NONE,"" + nNonTrainableParams )
         else
-            cc_print(CC_FG_GRAY, "0" + nl)
+            ? oStyl.white(:NONE,"0")
         ok
         
-        cc_print(CC_FG_CYAN,  "_________________________________________________________________" + nl + nl)
+         ? oStyl.cyan(:NONE,"_________________________________________________________________" + nl)
 
     private
     

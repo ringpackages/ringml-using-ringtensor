@@ -1,14 +1,11 @@
-# File: examples/classify_demo.ring
 # Description: Multi-class classification example (Improved)
 # Author: Azzeddine Remmal
-# File: examples/classify_demo_fixed.ring
 
-load "../src/ringml.ring" # تأكد من المسار
-load "stdlib.ring"
+load "ringml.ring"
 
 decimals(8) 
 
-see "=== RingML Multi-Class Classification Demo (Fixed) ===" + nl
+see "=== RingML Multi-Class Classification Demo ===" + nl
 
 # 1. Data (Define as Lists first)
 aInputs = [

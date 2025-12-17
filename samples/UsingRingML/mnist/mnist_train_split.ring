@@ -2,10 +2,9 @@
 # Description: MNIST Training with DataSplitter and Accuracy Validation
 # Author: Azzeddine Remmal
 
-load "stdlib.ring"
 load "ringml.ring"
 load "mnist_dataset.ring"
-load "csvlib.ring"
+
 
 decimals(8)
 
@@ -70,7 +69,7 @@ model.summary()
 # 5. Training Setup
 criterion = new CrossEntropyLoss
 optimizer = new Adam(0.01) 
-nEpochs   = 20
+nEpochs   = 50
 
 # --- SETUP VISUALIZER ---
 viz = new TrainingVisualizer(nEpochs, trainLoader.nBatches)

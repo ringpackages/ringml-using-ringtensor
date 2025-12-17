@@ -1,12 +1,7 @@
-# File: examples/chess_app.ring
 # Description: Console App to predict Chess End-Game result
 # Author: Azzeddine Remmal
 
-# File: examples/Chess_End_Game/chess_app.ring
-# Description: Inference App (Fixed for C-Pointers)
-
-load "stdlib.ring"
-load "../../src/ringml.ring" # تأكد من المسار الصحيح للملف
+load "ringml.ring"
 load "chess_utils.ring"
 
 see "==========================================" + nl
@@ -24,11 +19,11 @@ model.add(new Dense(16, 18))
 model.add(new Softmax)
 
 # 2. Load Weights
-cModelFile = "model/chess_model_fast.rdata"
+cModelFile = "model/chess_model_lite.rdata"
 
 if !fexists(cModelFile)
     # Try looking in current folder
-    cModelFile = "chess_model_fast.rdata"
+    cModelFile = "chess_model_lite.rdata"
     if !fexists(cModelFile)
         see "Error: Model file not found." + nl
         bye

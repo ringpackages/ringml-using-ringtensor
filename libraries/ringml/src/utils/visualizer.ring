@@ -16,9 +16,9 @@ class TrainingVisualizer
         nTotalBatches = nBatches
         
         # Initial Clear/Header
-        cc_print(CC_FG_CYAN, "==========================================" + nl)
-        cc_print(CC_FG_CYAN, "*      RingML Training Dashboard         *" + nl)
-        cc_print(CC_FG_CYAN, "==========================================" + nl)
+        ? oStyl.CYAN(:BOLD,"==========================================")
+        ? oStyl.WHITE(:BOLD," " + RingMLVersion() + " Training Dashboard         ")
+        ? oStyl.CYAN(:BOLD,"==========================================")
 
     func update nEpoch, nBatch, nLoss, nAcc
         # 1. Calculate Progress
@@ -35,14 +35,14 @@ class TrainingVisualizer
 
         # 3. Determine Colors based on performance
         # Loss Color: Red (Bad) -> Yellow -> Green (Good < 1.0)
-        nLossColor = CC_FG_RED
-        if nLoss < 2.0 nLossColor = CC_FG_YELLOW ok
-        if nLoss < 1.0 nLossColor = CC_FG_GREEN ok
+        nLossColor = :RED
+        if nLoss < 2.0 nLossColor = :YELLOW ok
+        if nLoss < 1.0 nLossColor = :GREEN ok
 
         # Accuracy Color: Red -> Yellow -> Green (> 50%)
-        nAccColor = CC_FG_RED
-        if nAcc > 20 nAccColor = CC_FG_YELLOW ok
-        if nAcc > 50 nAccColor = CC_FG_GREEN ok
+        nAccColor = :RED
+        if nAcc > 20 nAccColor = :YELLOW ok
+        if nAcc > 50 nAccColor = :GREEN ok
 
         # 4. Draw the UI (Using \r to overwrite line)
         # Note: We print multiple components. 
@@ -58,42 +58,43 @@ class TrainingVisualizer
         if nSpinIdx > 4 nSpinIdx = 1 ok
 
         # Print Epoch info
-        cc_print(CC_FG_CYAN, " Epoch " + nEpoch + "/" + nTotalEpochs + " ")
+        oStyl.cyan(:NONE," Epoch " + nEpoch + "/" + nTotalEpochs + " ")
         
         # Print Progress Bar
-        cc_print(CC_FG_WHITE, cBar + " " + floor(nPercent) )
+        oStyl.white(:NONE,cBar + " " + floor(nPercent) )
         
         # Print Metrics
-        cc_print(CC_FG_WHITE, "| Loss: ")
-        cc_print(nLossColor, "" + nLoss + " ")
+        oStyl.white(:NONE,"| Loss: ")
+        oStyl.seeString(nLossColor,:NONE, "" + nLoss + " ")
         
-        cc_print(CC_FG_WHITE, "| Accuracy: ")
-        cc_print(nAccColor, "" + nAcc ) 
-        see " %"
+        oStyl.white(:NONE,"| Accuracy: ")
+        oStyl.seeString(nAccColor,:NONE, "" + nAcc + " %") 
         
         # No new line at the end to allow overwriting!
 
     func finishEpoch nEpoch, nAvgLoss, nValAcc
         # Loss Color: Red (Bad) -> Yellow -> Green (Good < 1.0)
-        nLossColor = CC_FG_RED
-        if nAvgLoss < 2.0 nLossColor = CC_FG_YELLOW ok
-        if nAvgLoss < 1.0 nLossColor = CC_FG_GREEN ok
+        nLossColor = :RED
+        if nAvgLoss < 2.0 nLossColor = :YELLOW ok
+        if nAvgLoss < 1.0 nLossColor = :GREEN ok
 
         # Accuracy Color: Red -> Yellow -> Green (> 50%)
-        nAccColor = CC_FG_RED
-        if nValAcc > 20 nAccColor = CC_FG_YELLOW ok
-        if nValAcc > 50 nAccColor = CC_FG_GREEN ok
+        nAccColor = :RED
+        if nValAcc > 20 nAccColor = :YELLOW ok
+        if nValAcc > 50 nAccColor = :GREEN ok
 
         # When epoch is done, we print a permanent summary line
         see char(13) + copy(" ", 80) + char(13) # Clear line
         
-        cc_print(CC_FG_GREEN, "[DONE]")
-        cc_print(CC_FG_YELLOW, " Epoch " + nEpoch + ": ")
-        cc_print(CC_FG_WHITE, "Avg Loss = ")
-        cc_print(nLossColor, "" + nAvgLoss)
-        cc_print(CC_FG_WHITE, " | ")
-        cc_print(CC_FG_WHITE, "Val Accuracy = ")
-        cc_print(nAccColor, "" + nValAcc ) see " %" 
-        see nl 
+        oStyl.green(:NONE,"[DONE]")
+        oStyl.yellow(:NONE," Epoch " + nEpoch + ": ")
+        oStyl.white(:NONE,"Avg Loss = ")
+
+        oStyl.seeString(nLossColor,:NONE, "" + nAvgLoss)
+
+        oStyl.white(:NONE," | ")
+        oStyl.white(:NONE,"Val Accuracy = ")
+
+        ? oStyl.seeString(nAccColor,:NONE, "" + nValAcc + " %") 
         # Print a separator or Brain animation frame if desired
     

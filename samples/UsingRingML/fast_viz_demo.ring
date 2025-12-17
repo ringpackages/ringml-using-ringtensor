@@ -2,10 +2,10 @@
 # Description: Quick Demo with GUARANTEED convergence to see visuals
 # Author: Azzeddine Remmal
 
-load "stdlib.ring"
+
 load "ringml.ring"
 
-decimals(3)
+decimals(10)
 
 see "=== RingML Visual Demo (Guaranteed Learning) ===" + nl
 
@@ -46,7 +46,9 @@ testLoader  = new DataLoader(testDataset, batch_size)
 
 # 4. Build Model
 model = new Sequential
-model.add(new Dense(2, 32))
+model.add(new Dense(2, 64))
+model.add(new ReLU)
+model.add(new Dense(64, 32))
 model.add(new ReLU)
 model.add(new Dense(32, 16))
 model.add(new ReLU)
@@ -57,7 +59,7 @@ model.summary()
 
 # 5. Training
 criterion = new CrossEntropyLoss
-optimizer = new Adam(0.01) 
+optimizer = new Adam(0.001) 
 nEpochs   = 20
 
 # Load Visualizer
