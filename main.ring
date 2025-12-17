@@ -6,6 +6,7 @@
 # License: MIT License
 
 load "stdlib.ring"
+sleep(2)
 load "ringml.ring"
 
 
