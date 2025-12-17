@@ -6,8 +6,8 @@
 # License: MIT License
 
 load "stdlib.ring"
-sleep(2)
-load "ringml.ring"
+libPath = exefolder() + "..\libraries\ringml\src\ringml.ring"
+eval("load " + libPath)
 
 
 
