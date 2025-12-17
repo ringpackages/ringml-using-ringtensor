@@ -36,7 +36,7 @@ model.add(new Dropout(0.2))
 
 model.add(new Dense(128, 64))   
 model.add(new Tanh)        
-//model.add(new Dropout(0.2))
+model.add(new Dropout(0.2))
 
 model.add(new Dense(64, 18)) 
 model.add(new Softmax)
@@ -45,8 +45,8 @@ model.summary()
 
 # D. Setup Training
 criterion = new CrossEntropyLoss
-optimizer = new Adam(0.001) 
-nEpochs   = 200
+optimizer = new Adam(0.005) 
+nEpochs   = 50
 
 # E. Visualization
 viz = new TrainingVisualizer(nEpochs, trainLoader.nBatches)

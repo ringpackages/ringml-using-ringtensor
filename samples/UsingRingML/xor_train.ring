@@ -2,47 +2,46 @@
 # Description: Training a Neural Network to solve XOR problem
 # Author: Azzeddine Remmal
 
-load "ringml.ring"
+load "ringml.ring" 
 
 decimals(10)
 
-see "=== RingML XOR Training Example ===" + nl
+see "=== RingML XOR Training Example (Fixed) ===" + nl
 
-# 1. Prepare Data (4 samples, 2 features)
-# XOR Inputs: [0,0], [0,1], [1,0], [1,1]
-inputs = new Tensor(4, 2)
-inputs.aData = [
+# 1. Prepare Data
+# XOR Inputs
+aRawInputs = [
     [0.0, 0.0],
     [0.0, 1.0],
     [1.0, 0.0],
     [1.0, 1.0]
 ]
+# Convert to Tensor
+inputs = listToTensor(aRawInputs)
 
-# XOR Targets: [0], [1], [1], [0]
-targets = new Tensor(4, 1)
-targets.aData = [
+# XOR Targets
+aRawTargets = [
     [0.0],
     [1.0],
     [1.0],
     [0.0]
 ]
+targets = listToTensor(aRawTargets)
 
 # 2. Build Model
-# Architecture: Input(2) -> Hidden(4) -> Output(1)
 model = new Sequential
 
-# Hidden Layer: 2 inputs -> 4 neurons, followed by Sigmoid
+# Hidden Layer: 2 inputs -> 4 neurons
 model.add(new Dense(2, 4))
 model.add(new Sigmoid)
 
-# Output Layer: 4 inputs -> 1 neuron, followed by Sigmoid
+# Output Layer: 4 inputs -> 1 neuron
 model.add(new Dense(4, 1))
 model.add(new Sigmoid)
 
 # 3. Setup Loss and Optimizer
 criterion = new MSELoss
-# Use higher learning rate for XOR with Sigmoid to speed up convergence
-optimizer = new SGD(0.2) 
+optimizer = new SGD(0.5) # Increased LR for faster convergence with Sigmoid
 
 # 4. Training Loop
 nEpochs = 5000
@@ -56,7 +55,7 @@ for epoch = 1 to nEpochs
     # B. Calculate Loss
     loss = criterion.forward(preds, targets)
     
-    # Print progress every 500 epochs
+    # Print progress
     if epoch % 500 = 0
         see "Epoch " + epoch + " : Loss = " + loss + nl
     ok
@@ -65,7 +64,7 @@ for epoch = 1 to nEpochs
     lossGrad = criterion.backward(preds, targets)
     model.backward(lossGrad)
     
-    # D. Optimize (Update Weights)
+    # D. Optimize
     for layer in model.getLayers()
         optimizer.update(layer)
     next
@@ -80,3 +79,18 @@ finalPreds.print()
 
 see "Expected Targets:" + nl
 targets.print()
+
+# --- Helper Function ---
+func listToTensor aList
+    nRows = len(aList)
+    if nRows = 0 return new Tensor(1,1) ok
+    nCols = len(aList[1])
+    
+    oTen = new Tensor(nRows, nCols)
+    
+    for r = 1 to nRows
+        for c = 1 to nCols
+            oTen.setVal(r, c, aList[r][c])
+        next
+    next
+    return oTen

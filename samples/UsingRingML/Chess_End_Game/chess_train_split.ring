@@ -24,7 +24,7 @@ see "Splitting Data (80% Train, 20% Test)..." + nl
 
 splitter = new DataSplitter
 # Ensure the method name matches your DataSplitter class (split vs splitData)
-sets = splitter.split(aRawsData, 0.2, true) 
+sets = splitter.splitData(aRawsData, 0.2, true) 
 
 aTrainData = sets[1]
 aTestData  = sets[2]

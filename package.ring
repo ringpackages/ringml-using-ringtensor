@@ -5,11 +5,11 @@ aPackageInfo = [
 	:developer = "Azzeddine Remmal",
 	:email = "azzeddine.remmal@gmail.com",
 	:license = "MIT License",
-	:version = "1.1.1",
+	:version = "1.1.2",
 	:ringversion = "1.24",
 	:versions = 	[
 		[
-			:version = "1.1.1",
+			:version = "1.1.2",
 			:branch = "master"
 		]
 	],
@@ -57,6 +57,8 @@ aPackageInfo = [
 		"libraries/ringml/src/loss/mse.ring",
 		"libraries/ringml/src/model/sequential.ring",
 		"libraries/ringml/src/optim/adam.ring",
+		"libraries/ringml/src/nlp/tokenizer.ring",
+		"libraries/ringml/src/nlp/tokenizer.ring.readme.md",
 		"libraries/ringml/src/optim/sgd.ring",
 		"libraries/ringml/src/ringml.ring",
 		"libraries/ringml/src/utils/functions.ring",
@@ -88,12 +90,10 @@ aPackageInfo = [
 		"samples/UsingRingML/fast_viz_demo.ring",
 		"samples/UsingRingML/loader_demo.ring",
 		"samples/UsingRingML/mnist/data/mnist_test.csv",
-		"samples/UsingRingML/mnist/data/mnist_test_lite.csv",
 		"samples/UsingRingML/mnist/mnist_app.ring",
 		"samples/UsingRingML/mnist/mnist_dataset.ring",
 		"samples/UsingRingML/mnist/mnist_train_split.ring",
 		"samples/UsingRingML/mnist/mnist_train_universal.ring",
-		"samples/UsingRingML/mnist/model/mnist_model.rdata",
 		"samples/UsingRingML/mnist/model/mnist_split_model.rdata",
 		"samples/UsingRingML/mnist/model/mnist_universal.rdata",
 		"samples/UsingRingML/README.md",

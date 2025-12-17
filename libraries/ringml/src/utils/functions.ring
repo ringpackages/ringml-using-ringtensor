@@ -21,5 +21,26 @@ func hasAttribute oObj, cName
 func Randomize(nSeed)
     return Random(nSeed)
 
+# ============================================================================
+# Function: listToTensor
+# Description: Converts a list to a Tensor.
+# ============================================================================
+func listToTensor aList
+    nRows = len(aList)
+    if nRows = 0 return new Tensor(1,1) ok
+    nCols = len(aList[1])
+    
+    oTen = new Tensor(nRows, nCols)
+    
+    for r = 1 to nRows
+        for c = 1 to nCols
+            oTen.setVal(r, c, aList[r][c])
+        next
+    next
+    return oTen
+
+
+func variableexists
+
 
 

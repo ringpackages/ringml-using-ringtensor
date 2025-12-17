@@ -1,16 +1,11 @@
 # File: examples/chess_train_lite.ring
 # Description: FAST training for Chess (Lite Version for CPU i3)
 # Author: Azzeddine Remmal
-# File: examples/chess_train_lite.ring
-# Description: FAST training for Chess (Lite Version for CPU i3) - Fixed
-# Author: Azzeddine Remmal & Code Gear-1
 
-load "stdlib.ring"
-load "../src/ringml.ring"
-load "../src/utils/visualizer.ring"
+load "ringml.ring"
 load "chess_utils.ring"
 load "chess_dataset.ring"
-load "csvlib.ring"
+
 
 decimals(4)
 

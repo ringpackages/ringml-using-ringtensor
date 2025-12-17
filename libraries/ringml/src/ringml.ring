@@ -29,7 +29,7 @@ load "utils/Styler.ring"
 oStyl = new Styler()
 
 func RingMLVersion
-    see " RingML v - (1.1.1)"
+    see " RingML v - (1.1.2)"
 
 func raise(cMessage)
     oStyl.Error(cMessage)
