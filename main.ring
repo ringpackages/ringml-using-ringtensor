@@ -6,9 +6,7 @@
 # License: MIT License
 
 load "stdlib.ring"
-libPath = exefolder() + "..\libraries\ringml\src\ringml.ring"
-eval("load " + libPath)
-
+load "ringml.ring"
 
 
 func main

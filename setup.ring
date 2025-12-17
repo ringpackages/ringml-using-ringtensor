@@ -1,4 +1,4 @@
 load "stdlib.ring"
 
 
-system("ringpm run ringml")
+system("ringpm run ringml-using-ringtensor")
