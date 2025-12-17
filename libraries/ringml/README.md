@@ -1,73 +1,88 @@
 # 🧠 RingML: Deep Learning Library for Ring
 
-RingML is a modular, high-performance Deep Learning framework built from scratch in the Ring programming language. It leverages the FastPro C-extension to perform accelerated matrix operations, enabling the training of Neural Networks for tasks like regression, binary classification, and multi-class classification.
+RingML is a high-performance, object-oriented Deep Learning framework built for the Ring programming language. It is powered by **RingTensor**, a custom C-extension designed specifically to provide fast, double-precision matrix operations and fused optimizer kernels.
 
-The goal is to provide a PyTorch-like object-oriented API for Ring developers, adhering to Jacob's Law by offering a familiar and intuitive interface.
+The library offers a PyTorch-like API, adhering to **Jacob's Law** by providing a familiar and intuitive interface for building Neural Networks.
 
-**Current Version:** 1.0.8 (Stable - Hybrid Engine)
+**Current Version:** 1.1.0 (Stable - Powered by RingTensor)
 
-## 📚 Installation
+## 📦 Installation
+
+You can easily install the package via the Ring Package Manager:
 
 ```bash
-ringpm install ringml from Azzeddine2017
+ringpm install ringml-using-ringtensor from Azzeddine2017
 ```
+
+> **Note:** Ensure the `ring_tensor.dll` (Windows) or `libring_tensor.so` (Linux/macOS) is in your execution path.
 
 ## 🛠️ Tech Stack & Architecture
 
 - **Core Language:** Ring Programming Language (v1.24+)
-- **Acceleration:** FastPro Extension (C-based DLL/SO) for heavy lifting.
+- **Engine:** RingTensor Extension (Custom C-based DLL/SO).
 - **Architecture:** Modular OOP (Tensor, Layers, Model, Optim, Data).
-- **Math Engine:** Hybrid Mode.
-    - *Critical ops (Sub, MatMul, Transpose)* are implemented in optimized Ring loops to ensure precision and stability.
-    - *Heavy ops (Add, Random, Activations)* utilize C-level FastPro speed.
-- **Persistence:** Custom High-Precision Serializer (.rdata) preserving 15-18 decimal places.
+- **Math Backend:** Full C Acceleration.
 
-## 🚀 Key Features by Module
+Unlike previous versions that used slow loops for stability, RingML now uses the **RingTensor C-extension** for all critical operations (MatMul, Transpose, Element-wise Math, Activations).
 
-### Module 1: Core Engine (src/core/)
-- **Tensor Class:** Wraps math operations.
-- **Operations:** Matrix Multiplication, Transpose, Broadcasting, Scalar Math.
-- **Stability:** Implements Numerically Stable Softmax to prevent NaN during training.
+- **Fused Kernels:** Optimizers (Adam, SGD) calculate updates inside C in a single pass for maximum speed.
+- **Precision:** Full Double Precision (64-bit float) guaranteed across the pipeline.
 
-### Module 2: Neural Building Blocks (src/layers/)
-- **Dense:** Fully Connected Layer with smart weight initialization.
+## 🚀 Key Features
+
+### 1. Core Engine (`src/core/`)
+- **Tensor Class:** The mathematical heart of the library.
+- **RingTensor Integration:** Direct calls to C functions for `tensor_matmul`, `tensor_add`, `tensor_sigmoid`, etc.
+- **Stability:** Implements Numerically Stable Softmax (in C) to prevent NaN issues.
+
+### 2. Neural Building Blocks (`src/layers/`)
+- **Dense:** Fully Connected Layer with smart random weight initialization.
 - **Activations:** ReLU, Sigmoid, Tanh, Softmax.
-- **Regularization:** Dropout layer to prevent overfitting.
+- **Regularization:** Dropout layer (with C-accelerated mask generation) to prevent overfitting.
 
-### Module 3: Model & Optimization (src/model/, src/optim/)
-- **Sequential:** Stack layers linearly. Includes `summary()` to view architecture and parameter counts.
-- **Optimizers:**
-    - SGD (Stochastic Gradient Descent).
-    - Adam (Adaptive Moment Estimation) for fast convergence.
+### 3. Model & Optimization (`src/model/`, `src/optim/`)
+- **Sequential:** Stack layers linearly. Includes `model.summary()` to visualize architecture.
+- **Optimizers:** SGD, Adam (Adaptive Moment Estimation).
 - **Loss Functions:** MSELoss (Regression), CrossEntropyLoss (Classification).
-- **Modes:** Support for `train()` and `evaluate()` modes (essential for Dropout).
+- **Modes:** Support for `train()` and `evaluate()` modes.
 
-### Module 4: Data Pipeline (src/data/)
-- **DataSplitter:** Utility to shuffle and split raw data into Training/Testing sets (e.g., 80/20 split).
-- **DataLoader:** Efficient Mini-Batch processing to handle large datasets without memory overflow.
-- **Lazy Loading:** Custom Dataset support.
+### 4. Data Pipeline (`src/data/`)
+- **UniversalDataset:** An all-in-one class that automates file loading (CSV/JSON), cleaning, shuffling, splitting, and memory management.
+- **DataSplitter:** Utility to shuffle and split raw data manually.
+- **DataLoader:** Efficient Mini-Batch processing.
 
 ## ⚡ Quick Start Guide
 
-### 1. Data Preparation
-Use `DataSplitter` to handle raw CSV data and `DataLoader` for batching.
+### 1. Data Preparation (The Professional Way)
+Instead of handling raw lists manually, use `UniversalDataset` to handle loading, cleaning, shuffling, and splitting in one go.
 
 ```ring
-load "src/ringml.ring"
+load "ringml.ring" 
 load "stdlib.ring"
 
-# 1. Load Data
-aRawData = [ [0,0,0], [0,1,1], [1,0,1], [1,1,0] ] # Example XOR data
+# Define how to process a single row
+class MyDataset from UniversalDataset
+    func rowToTensor row
+        # Convert row list to Tensors (Input, Target)
+        oIn = new Tensor(1, 2)
+        oIn.setVal(1, 1, number(row[1])) 
+        oIn.setVal(1, 2, number(row[2])) 
+        
+        oOut = new Tensor(1, 1)
+        oOut.setVal(1, 1, number(row[3]))
+        
+        return [oIn, oOut]
 
-# 2. Split (80% Train, 20% Test) with Shuffle
-splitter = new DataSplitter
-sets = splitter.splitData(aRawData, 0.2, true) 
-trainData = sets[1]
-testData  = sets[2]
+# Load and Prepare
+data = new MyDataset("data.csv")
+data.setHeader(true)        # Skip first row
+data.setShuffle(true)       # Randomize
+data.setSplit(0.2)          # 20% for Testing
+data.loadData()             # Execute
 
-# 3. Create Loader (Batch Size = 32)
-dataset = new TensorDataset(trainData) 
-loader  = new DataLoader(dataset, 32)
+# Create Loaders
+trainLoader = new DataLoader(data.getTrainDataset(), 32)
+testLoader  = new DataLoader(data.getTestDataset(), 32)
 ```
 
 ### 2. Building the Model
@@ -88,23 +103,9 @@ model.add(new Softmax)
 # View architecture
 model.summary()
 ```
-### 2.2 Freezing a layer
-```ring
-# freeze layer
-model = new Sequential
-l1 = new Dense(6, 32)
-l1.freeze()  # freeze first layer
-model.add(l1)
-model.add(new Tanh)
-model.add(new Dropout(0.2))
-model.add(new Dense(32, 1))
-model.add(new Softmax)
-
-model.summary()
-```
 
 ### 3. Training with Adam
-The training loop handles Forward pass, Backward pass (Backprop), and Optimization.
+The training loop handles Forward pass, Backward pass, and Optimization.
 
 ```ring
 criterion = new CrossEntropyLoss
@@ -116,8 +117,8 @@ model.train()
 
 for epoch = 1 to nEpochs
     epochLoss = 0
-    for b = 1 to loader.nBatches
-        batch = loader.getBatch(b)
+    for b = 1 to trainLoader.nBatches
+        batch = trainLoader.getBatch(b)
         inputs = batch[1] 
         targets = batch[2]
         
@@ -132,31 +133,32 @@ for epoch = 1 to nEpochs
         
         epochLoss += loss
     next
-    see "Epoch " + epoch + " Loss: " + (epochLoss / loader.nBatches) + nl
+    see "Epoch " + epoch + " Loss: " + (epochLoss / trainLoader.nBatches) + nl
 next
 ```
 
-### 4. Saving
+### 4. Saving & Loading
 Switch to evaluation mode to disable Dropout, then save.
 
 ```ring
 model.evaluate() 
 model.saveWeights("mymodel.rdata")
 see "Model Saved." + nl
+
+# --- Loading ---
+model2 = new Sequential
+# ... define same structure ...
+model2.loadWeights("mymodel.rdata")
 ```
 
-## ✅ Development Progress (Changelog)
-**Status:** ✅ Completed & Verified
+## 🧪 Included Examples
 
-- [x] **T01:** Core Tensor Engine & Math Operations.
-- [x] **T02:** Layers (Dense, ReLU, Sigmoid, Tanh, Softmax, Dropout).
-- [x] **T03:** Model Management (Sequential, Summary, Save/Load).
-- [x] **T04:** Optimization (SGD, Adam) & Loss (MSE, CrossEntropy).
-- [x] **T05:** Data Pipeline (Dataset, DataLoader, DataSplitter).
-- [x] **T06:** Real-World Demos:
-    - XOR Problem (Binary Classification).
-    - Chess End-Game (18-Class Classification).
-    - MNIST (Computer Vision / Digit Recognition).
+- **xor_train.ring:** Binary Classification.
+- **Chess_End_Game/:** A complete real-world project classifying chess game results (18 classes) from a CSV dataset.
+- **mnist_train.ring:** Computer Vision example for digit recognition.
 
 ## 📝 License
-Open Source. 
+
+Open Source under **MIT License**.
+
+**Author:** Azzeddine Remmal.
