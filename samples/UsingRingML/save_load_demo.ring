@@ -79,15 +79,3 @@ if diff < 0.0001
 else
     see "FAILURE (Mismatch)" + nl
 ok
-
-# --- Helper Function ---
-func listToTensor aList
-    nRows = len(aList)
-    nCols = len(aList[1])
-    oTen = new Tensor(nRows, nCols)
-    for r = 1 to nRows
-        for c = 1 to nCols
-            oTen.setVal(r, c, aList[r][c])
-        next
-    next
-    return oTen
